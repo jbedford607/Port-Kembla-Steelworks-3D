@@ -4,6 +4,18 @@ A fictionalised explorable 3D reconstruction inspired by Port Kembla, NSW, Austr
 
 **Status: playable modular Three.js alpha.** This is a new project foundation, not an exact port of the earlier custom-WebGL standalone V5. That file is still available in the original ChatGPT conversation.
 
+## Play immediately without the launcher
+
+**If START_FIREFOX.cmd or npm run dev does not start:** use [PLAY_OFFLINE_V5.html](PLAY_OFFLINE_V5.html).
+
+1. Click `PLAY_OFFLINE_V5.html` in the repository.
+2. Click **Download raw file** in GitHub.
+3. Open the downloaded HTML in Firefox. Do not run any command.
+
+This is the last complete standalone **V5** build. The newer Three.js rewrite is kept in `src/` but has not yet been verified as playable in your Firefox installation.
+
+---
+
 ## Run in Firefox
 
 **Easiest on Windows:** install Node.js once, then double-click START_FIREFOX.cmd in the extracted project folder. It installs dependencies on first run, starts the local game server and opens Firefox.
