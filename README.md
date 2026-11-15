@@ -6,6 +6,9 @@ A fictionalised explorable 3D reconstruction inspired by Port Kembla, NSW, Austr
 
 ## Run in Firefox
 
+**Easiest on Windows:** install Node.js once, then double-click START_FIREFOX.cmd in the extracted project folder. It installs dependencies on first run, starts the local game server and opens Firefox.
+
+
 1. Install Node.js 22+ from https://nodejs.org/
 2. Use GitHub **Code → Download ZIP**, then extract the folder.
 3. Open a terminal inside the extracted folder.
