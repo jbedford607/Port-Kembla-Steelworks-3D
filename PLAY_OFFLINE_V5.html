@@ -1,0 +1,1408 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover"/><meta name="theme-color" content="#10151a"/>
+<title>PORT KEMBLA — STEELWORKS / EXPANDED V4</title>
+<style>
+:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#262c30;font-family:'Arial Narrow','Helvetica Neue',Arial,sans-serif;color:#dbe0df;-webkit-user-select:none;user-select:none;touch-action:none}#world{display:block;width:100vw;height:100vh;outline:none;touch-action:none;cursor:crosshair}
+#vignette{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 47%,transparent 48%,rgba(0,0,0,.36) 100%);mix-blend-mode:multiply}#grain{position:fixed;inset:0;pointer-events:none;opacity:.08;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 170 170' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.87' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.62'/%3E%3C/svg%3E")}
+#top{position:fixed;top:27px;left:34px;max-width:calc(100vw - 65px);pointer-events:none;text-shadow:0 1px 7px #071015a8}#top .kicker{font:700 11px/1.2 monospace;letter-spacing:3px;color:#ffb064}#top h1{margin:8px 0 0;font:600 clamp(19px,3vw,34px)/1 'Arial Narrow',Arial,sans-serif;letter-spacing:4px;transform:scaleX(.93);transform-origin:left}#top p{margin:9px 0 0;font:11px/1.5 monospace;color:#d9d8cdd0;letter-spacing:1.1px}
+#right{position:fixed;right:30px;top:29px;text-align:right;font:11px/1.6 monospace;letter-spacing:1.3px;text-shadow:0 2px 7px #0009;pointer-events:none}#right .line{display:inline-block;height:1px;width:48px;background:#ffc06e;vertical-align:middle;margin:0 7px 3px 0}#weather{color:#f4c89a}#right .meta{opacity:.68}
+#reticle{position:fixed;width:16px;height:16px;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;opacity:.52}#reticle:before,#reticle:after{content:'';position:absolute;background:#f3dbb6aa}#reticle:before{left:7px;top:0;width:1px;height:16px}#reticle:after{top:7px;left:0;height:1px;width:16px}
+#footer{position:fixed;left:34px;bottom:29px;pointer-events:none;text-shadow:0 2px 6px #000b;font:10px/1.6 monospace;letter-spacing:1.2px;max-width:calc(100vw - 67px)}#footer strong{display:block;color:#e2e0d7;font:700 12px/1.5 monospace;letter-spacing:1.2px}#footer span{color:#c8d2d1a6}#footer b{color:#ffa96a;font-weight:400}
+#tip{position:fixed;bottom:35px;left:50%;transform:translateX(-50%);text-align:center;font:10px/1.5 monospace;letter-spacing:1.8px;white-space:nowrap;color:#f2e5d7;pointer-events:none;opacity:.55;transition:opacity .35s;text-shadow:0 2px 7px #000}
+#notification{position:fixed;top:91px;left:34px;max-width:calc(100vw - 70px);font:11px/1.5 monospace;color:#ffba7c;letter-spacing:1.4px;opacity:0;transition:opacity .5s;text-shadow:0 2px 8px #000;pointer-events:none}
+#help{position:fixed;right:24px;bottom:26px;width:290px;padding:20px 24px 21px;background:rgba(10,20,24,.80);border:1px solid rgba(234,204,163,.21);backdrop-filter:blur(14px);font:12px/1.85 monospace;color:#e1dfd6;box-shadow:0 20px 70px #0009}#help h2{font:700 12px/1.4 monospace;letter-spacing:2px;color:#e5b077;margin:0 0 9px}#help span{color:#c8c7c0}#help kbd{display:inline-block;color:#ffe1ba;min-width:76px;font-family:inherit;font-weight:700}#help small{display:block;line-height:1.5;color:#b5b9b9;margin-top:13px}#help[hidden],#touch[hidden],#error[hidden]{display:none!important}
+#error{position:fixed;z-index:10;bottom:15px;left:15px;right:15px;padding:16px;border:1px solid #b77b55;background:#171a1e;color:#ffddc6;font:13px/1.5 monospace}
+#touch{position:fixed;inset:0;pointer-events:none}#joystick{position:absolute;bottom:47px;left:42px;width:100px;height:100px;border:1px solid #ffffff44;border-radius:100%;background:#ffffff08;display:grid;place-items:center}#stick{width:42px;height:42px;border-radius:50%;background:#ddd5bd4d;border:1px solid #ffffff77;transition:transform .01s}#touch .actions{position:absolute;right:15px;bottom:23px;display:grid;grid-template-columns:repeat(3,54px);gap:9px;pointer-events:auto}#touch button{border:1px solid #ffffff55;background:#111a1dbb;backdrop-filter:blur(6px);border-radius:9px;height:51px;color:#ffdab3;font:600 10px monospace;touch-action:manipulation}#touch .selected{background:#a7613c99}
+@media(max-width:700px){#top{top:14px;left:18px}#top .kicker{font-size:9px;letter-spacing:1.8px}#top h1{font-size:19px;letter-spacing:2px;margin-top:4px}#top p{font-size:9px}#right{right:16px;top:15px;font-size:9px}#right .meta{display:none}#footer{left:18px;bottom:11px;font-size:9px;max-width:230px}#footer strong{font-size:10px}#tip{display:none}#notification{top:79px;left:18px;font-size:9px}#help{bottom:95px;right:12px;width:268px;padding:14px}}
+#siteDiagram{position:fixed;z-index:4;right:24px;top:89px;width:356px;max-width:calc(100vw - 26px);background:rgba(9,18,24,.91);border:1px solid #69777a86;box-shadow:0 12px 40px #0008;padding:12px 10px;backdrop-filter:blur(8px);font:10px/1.55 monospace;letter-spacing:1px;color:#e2e2d8}#siteDiagram[hidden]{display:none}#siteDiagram header{display:flex;justify-content:space-between;color:#ebb578;letter-spacing:1.5px;margin-bottom:4px;font-weight:700}#siteDiagram header span{color:#b2bec0;font-weight:400}#siteDiagram canvas{width:100%;height:auto;display:block}#siteDiagram p{margin:6px 3px 1px;color:#c3b29c;line-height:1.6;font-size:9px}@media(max-width:700px){#siteDiagram{right:8px;top:68px;width:290px;padding:8px}#siteDiagram header{letter-spacing:.5px;font-size:9px}}
+#perf{position:fixed;right:29px;bottom:23px;color:#bdc7c5aa;font:10px/1.5 monospace;letter-spacing:1px;text-align:right;pointer-events:none;text-shadow:0 2px 5px #0009}
+@media(max-width:700px){#perf{display:none}}
+</style></head><body>
+<canvas id="world" aria-label="Interactive 3D reconstruction of Port Kembla Steelworks"></canvas>
+<div id="vignette"></div><div id="grain"></div>
+<div id="top"><div class="kicker">ILLAWARRA · NEW SOUTH WALES</div><h1>PORT KEMBLA</h1><p>THE WORKS &nbsp; / &nbsp; INDUSTRIAL SYSTEMS</p></div>
+<div id="right"><div><span class="line"></span><span id="weather">GOLDEN STORM</span></div><div class="meta">STEELWORKS / BLUESCOPE · NSW</div></div>
+<div id="notification" aria-live="polite"></div><div id="perf" title="Current performance preset"></div><div id="reticle"></div>
+<div id="footer"><strong id="location">BLAST FURNACE 5</strong><span>1–0 &nbsp; LANDMARKS &nbsp; / &nbsp; <b>N</b> &nbsp; NEXT &nbsp; / &nbsp; <b>P</b> &nbsp; PERFORMANCE &nbsp; / &nbsp; <b>H</b> &nbsp; HELP</span></div>
+<div id="tip">CLICK TO LOOK AROUND · N NEXT SITE · P QUALITY · M MAP</div>
+<div id="help" hidden><h2>EXPLORATION CONTROLS</h2><div><kbd>W A S D</kbd><span>Move through the works</span></div><div><kbd>MOUSE</kbd><span>Look around</span></div><div><kbd>SHIFT</kbd><span>Sprint</span></div><div><kbd>SPACE</kbd><span>Jump / ascend</span></div><div><kbd>C</kbd><span>Crouch / descend</span></div><div><kbd>V</kbd><span>Toggle free flight</span></div><div><kbd>1 – 0</kbd><span>Jump between landmarks</span></div><div><kbd>E</kbd><span>Use nearby equipment</span></div><div><kbd>T</kbd><span>Cycle atmosphere</span></div><div><kbd>F</kbd><span>Toggle torch</span></div><div><kbd>M</kbd><span>Toggle process map</span></div><div><kbd>N / B</kbd><span>Next / previous landmark</span></div><div><kbd>P</kbd><span>Performance preset</span></div><div><kbd>G</kbd><span>Toggle spatial factory ambience</span></div><div><kbd>H</kbd><span>Hide help</span></div><small>Creative reconstruction based on public imagery. Positions, plant operations, and paths are approximations—not a survey of an operating facility.</small></div>
+<div id="siteDiagram" hidden aria-label="Industrial process map">
+ <header>WORKS · PROCESS MAP <span>M TO CLOSE</span></header><canvas id="diagram" width="335" height="288"></canvas>
+ <p>RAW MATERIALS → COKE / SINTER → IRON → STEEL → CASTING → ROLLING → DESPATCH</p>
+</div>
+<div id="touch" hidden><div id="joystick"><div id="stick"></div></div><div class="actions"><button id="run">RUN</button><button id="jump">JUMP</button><button id="use">USE</button><button id="fly">FLY</button><button id="teleport">NEXT</button><button id="mode">SKY</button></div></div><div id="error" hidden></div>
+<script>
+'use strict';
+(() => {
+const errorEl=document.getElementById('error');
+window.addEventListener('error',ev=>{errorEl.hidden=false;errorEl.textContent='Scene error: '+(ev.error?.message||ev.message||'Unknown error');});
+window.addEventListener('unhandledrejection',ev=>{errorEl.hidden=false;errorEl.textContent='Scene error: '+(ev.reason?.message||String(ev.reason));});
+const canvas=document.getElementById('world');
+const gl=canvas.getContext('webgl2',{alpha:false,depth:true,antialias:true,powerPreference:'high-performance'});
+if(!gl){document.getElementById('error').textContent='This browser does not support WebGL 2.';document.getElementById('error').hidden=false;return;}
+const PI=Math.PI, TAU=PI*2, clamp=(v,a,b)=>Math.max(a,Math.min(b,v)), lerp=(a,b,t)=>a+(b-a)*t;
+const vec=(x=0,y=0,z=0)=>[x,y,z], sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]], plus=(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]], mul=(a,s)=>[a[0]*s,a[1]*s,a[2]*s], dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2], cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]],len=a=>Math.hypot(...a), norm=a=>mul(a,1/Math.max(.0001,len(a)));
+let seed=4098; const rand=()=>{seed=(Math.imul(seed,1664525)+1013904223)|0;return (seed>>>0)/4294967296}, range=(a,b)=>a+(b-a)*rand(), pick=a=>a[(rand()*a.length)|0];
+const C={rust:[.44,.255,.17],rust2:[.57,.314,.195],darkRust:[.3,.205,.18],sand:[.57,.52,.43],steel:[.43,.46,.47],pale:[.71,.74,.73],blue:[.23,.42,.48],roof:[.32,.36,.37],black:[.19,.20,.20],pipe:[.48,.34,.24],cream:[.72,.68,.57],concrete:[.53,.54,.51],yellow:[.92,.60,.13],orange:[1,.28,.045],white:[.86,.90,.90],rail:[.30,.29,.27],ore:[.28,.20,.16]};
+const VS=`#version 300 es
+precision highp float;
+layout(location=0) in vec3 aPosition;
+layout(location=1) in vec3 aNormal;
+layout(location=2) in vec2 aUV;
+layout(location=3) in vec3 aColor;
+layout(location=4) in float aMaterial;
+uniform mat4 uVP;
+uniform mat4 uLightMatrix;uniform vec3 uOffset;
+out vec3 vPos; out vec3 vN; out vec2 vUv; out vec3 vColor; out float vMat; out vec4 vL;
+void main(){vPos=aPosition+uOffset;vN=aNormal;vUv=aUV;vColor=aColor;vMat=aMaterial;vL=uLightMatrix*vec4(vPos,1.);gl_Position=uVP*vec4(vPos,1.);}`;
+const FS=`#version 300 es
+precision highp float;
+in vec3 vPos;in vec3 vN;in vec2 vUv;in vec3 vColor;in float vMat;in vec4 vL;
+uniform sampler2D uAtlas;uniform sampler2D uShadow;uniform sampler2D uSigns;
+uniform vec3 uEye,uSunDir; uniform float uTime,uMode,uLightning,uTorch;
+uniform vec3 uSkyHaze;uniform vec3 uTorchDir;uniform float uQuality;
+out vec4 fragColor;
+float hash(vec3 p){return fract(sin(dot(p,vec3(12.9898,78.233,47.34)))*43758.5453);}
+vec3 sampleAtlas(int id,vec2 uv){
+ // Each 128x128 material has a 4-pixel wrap-safe gutter around 120px periodic artwork.
+ // textureGrad uses UNWRAPPED derivatives, avoiding the huge mip shifts at fract seams.
+ vec2 q=(fract(uv)*.9375+.03125+vec2(float(id%4),float(id/4)))/4.;
+ vec2 dx=dFdx(uv)*(.9375/4.),dy=dFdy(uv)*(.9375/4.);
+ return textureGrad(uAtlas,q,dx,dy).rgb;
+}
+float shadow(vec3 N){
+ if(uQuality<.5)return 1.;
+ vec3 q=vL.xyz/max(vL.w,.0001)*.5+.5;
+ if(q.x<0.||q.x>1.||q.y<0.||q.y>1.||q.z<0.||q.z>1.)return 1.;
+ float bias=max(.00016,.0012*(1.-dot(N,uSunDir)));
+ vec2 texel=1./vec2(textureSize(uShadow,0));
+ if(uQuality<1.5){float d=texture(uShadow,q.xy).r;return q.z-bias<d?1.:.38;}
+ float sh=0.;for(int y=-1;y<=1;y++)for(int x=-1;x<=1;x++){
+  float d=texture(uShadow,q.xy+vec2(float(x),float(y))*texel).r;
+  sh+=q.z-bias<d?1.:.36;
+ }
+ return sh/9.;
+}
+vec3 tonemap(vec3 x){return (x*(2.51*x+.03))/(x*(2.43*x+.59)+.14);}
+void main(){
+ vec3 N=normalize(vN);int id=int(floor(vMat+.5));
+ // World-anchored, seamless tri-planar mapping: same grid on every matching surface.
+ // Geometry UVs never reset the repeating material, so adjoining walls/floors align.
+ vec3 al;
+ if(id>=16){vec2 q=(clamp(vUv,vec2(.002),vec2(.998))+vec2(float((id-16)%4),floor(float(id-16)/4.)))*.25;al=texture(uSigns,q).rgb*vColor;}
+ else {
+   vec3 blend=pow(abs(N),vec3(8.));blend/=max(dot(blend,vec3(1.)),.0001);
+   float tileMeters = (id==3||id==6||id==13) ? 5.0 : 3.5;
+   vec3 q=vPos/tileMeters;
+   if(blend.y>.999)al=sampleAtlas(id,q.xz);
+   else if(blend.x>.999)al=sampleAtlas(id,q.zy);
+   else if(blend.z>.999)al=sampleAtlas(id,q.xy);
+   else al=sampleAtlas(id,q.zy)*blend.x+sampleAtlas(id,q.xz)*blend.y+sampleAtlas(id,q.xy)*blend.z;
+   al*=vColor;
+ }
+ float n=hash(floor(vPos*1.27));al*=.93+.14*n;
+ float diff=max(dot(N,uSunDir),0.),shade=shadow(N);
+ float ambient=uMode==3.? .11 : (uMode==1.? .23:.34);
+ vec3 lit=al*(vec3(.60,.68,.79)*ambient+vec3(1.39,.99,.60)*diff*shade*(uMode==1.? .25 : uMode==3.? .0:1.));
+ float specPower= id==3||id==11||id==15?33.:7.;float rough=id==3?.40: id==11?.24:.10;
+ vec3 view=normalize(uEye-vPos), h=normalize(view+uSunDir);float spec=pow(max(dot(N,h),0.),specPower)*(shade*diff);
+ lit+=vec3(1.0,.79,.51)*spec*rough;
+ if(id==10){float pulse=.93+.07*sin(uTime*4.+vPos.x*.7);lit+=al*vec3(2.8,.83,.25)*pulse;}
+ float lightDist=length(vPos-vec3(-183.,13.,-155.));lit+=al*vec3(1.9,.38,.07)*exp(-lightDist*.077);
+ float fdist=length(uEye-vPos);
+ float fdot=max(dot(normalize(vPos-uEye),uTorchDir),0.);
+ lit+=al*vec3(.85,.94,1.)*uTorch*pow(fdot,32.)*exp(-fdist*.025)*3.2;
+ lit+=al*vec3(.65,.77,1.)*uLightning*1.65;
+ if(id==15){
+   float wr=sin(vPos.x*.13+uTime*.58)*sin(vPos.z*.21+uTime*.81)+.4*sin(vPos.x*.78-vPos.z*.15+uTime*1.13);
+   float gleam=pow(max(dot(normalize(vec3(-uSunDir.x,-uSunDir.y,-uSunDir.z)),normalize(reflect(-view,vec3(0.,1.,0.)))),0.),14.);
+   lit=mix(vec3(.065,.16,.22),vec3(.18,.32,.36),clamp(.55+wr*.25,0.,1.));
+   lit+=vec3(1.25,.76,.36)*gleam*.55*(uMode==3.? .05:1.);
+ }
+ float fog=1.-exp(-fdist*(uMode==1.? .0029:(uMode==2.? .0019:.00155)));
+ lit=mix(lit,uSkyHaze,fog*.9);
+ fragColor=vec4(pow(tonemap(lit*1.25),vec3(.91)),1.);
+}`;
+const DEPTH_VS=`#version 300 es
+layout(location=0) in vec3 aPosition;uniform mat4 uLightMatrix;void main(){gl_Position=uLightMatrix*vec4(aPosition,1.);}`;
+const DEPTH_FS=`#version 300 es
+precision highp float;void main(){}`;
+const QUAD_VS=`#version 300 es
+const vec2 P[6]=vec2[6](vec2(-1.,-1.),vec2(1.,-1.),vec2(-1.,1.),vec2(-1.,1.),vec2(1.,-1.),vec2(1.,1.));out vec2 vUV;void main(){vec2 p=P[gl_VertexID];vUV=p;gl_Position=vec4(p,0.,1.);}`;
+const SKY_FS=`#version 300 es
+precision highp float;
+in vec2 vUV;uniform vec3 uForward,uRight,uUp,uSunDir;uniform float uAspect,uTan,uTime,uMode,uLightning;out vec4 fragColor;
+float h2(vec2 v){return fract(sin(dot(v,vec2(127.1,311.7)))*43758.5453);}
+float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h2(i),h2(i+vec2(1,0)),f.x),mix(h2(i+vec2(0,1)),h2(i+vec2(1,1)),f.x),f.y);}
+float fbm(vec2 p){float a=.5,s=0.;for(int i=0;i<5;i++){s+=a*noise(p);p=p*2.13+vec2(1.7,-3.1);a*=.52;}return s;}
+void main(){
+ vec3 dir=normalize(uForward+vUV.x*uAspect*uTan*uRight+vUV.y*uTan*uUp);
+ float y=dir.y,hor=pow(1.-max(y,.0),4.);float sun=max(dot(dir,uSunDir),0.);
+ float night=step(2.5,uMode),storm=1.-night;
+ vec3 base=mix(vec3(.46,.51,.55),vec3(.30,.36,.42),clamp(y*2.,0.,1.));
+ base=mix(base,vec3(.97,.54,.25),hor*.75);
+ float clouds=0.;if(y>-.18){
+   vec2 p=dir.xz/(max(.10,dir.y+.20));p=p*2.5+uTime*.003*vec2(.55,.19);
+   float shape=fbm(p*.56+fbm(p*.11)*2.2);
+   float detail=fbm(p*1.48+vec2(8.4,1.7));
+   float density=smoothstep(.36,.67,shape*.88+detail*.27);
+   float layer=smoothstep(.23,.64,fbm(p*.29+vec2(13.,9.)));
+   clouds=clamp(density*.83+layer*.34,0.,1.)*smoothstep(-.15,.12,y);
+ }
+ vec3 gray=mix(vec3(.39,.40,.43),vec3(.115,.147,.185),clamp(y*1.5+.3,0.,1.));
+ gray+=vec3(.20,.116,.066)*pow(sun,7.)*.9;
+ base=mix(base,gray,clouds*(uMode==2.? .27:.95));
+ float glare=pow(sun,25.)*.39+pow(sun,350.)*2.6+pow(sun,2500.)*2.4;
+ base+=vec3(1.1,.60,.26)*glare*(1.-clouds*.73)*storm;
+ base+=vec3(1.,.58,.25)*hor*.14*storm;
+ if(night>0.){base=mix(vec3(.026,.048,.082),vec3(.073,.09,.13),clamp(y+.1,0.,1.));base+=vec3(.16,.25,.37)*clouds*.4;float st=step(.99936,h2(floor(dir.xz*1200.+dir.y*2731.)));base+=vec3(st*.64*smoothstep(.01,.35,y));}
+ if(uMode==1.)base=mix(base,vec3(.072,.09,.125),.62);
+ base+=vec3(.58,.68,.88)*uLightning*.70;
+ fragColor=vec4(pow(max(base,0.),vec3(.92)),1.);
+}`;
+const PARTICLE_VS=`#version 300 es
+precision highp float;layout(location=0) in vec3 aPos;layout(location=1) in vec2 aUv;layout(location=2) in vec4 aCol;uniform mat4 uVP;out vec2 vUv;out vec4 vCol;void main(){vUv=aUv;vCol=aCol;gl_Position=uVP*vec4(aPos,1.);}`;
+const PARTICLE_FS=`#version 300 es
+precision highp float;in vec2 vUv;in vec4 vCol;out vec4 fragColor;void main(){float r=length(vUv*2.-1.);float f=pow(max(0.,1.-smoothstep(.08,1.,r)),1.25);float cloud=(.85+.15*sin(vUv.x*19.+vUv.y*12.))*f;fragColor=vec4(vCol.rgb,vCol.a*cloud);}`;
+const RAIN_VS=`#version 300 es
+precision highp float;layout(location=0)in vec3 aPos;uniform mat4 uVP;void main(){gl_Position=uVP*vec4(aPos,1.);}`;
+const RAIN_FS=`#version 300 es
+precision highp float;uniform float uLightning;out vec4 fragColor;void main(){fragColor=vec4(vec3(.65,.75,.84)+uLightning*.2,.47);}`;
+function compile(type,src){let s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(s));return s;}
+function program(vs,fs){let p=gl.createProgram();gl.attachShader(p,compile(gl.VERTEX_SHADER,vs));gl.attachShader(p,compile(gl.FRAGMENT_SHADER,fs));gl.linkProgram(p);if(!gl.getProgramParameter(p,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(p));return p;}
+let progs={world:program(VS,FS),depth:program(DEPTH_VS,DEPTH_FS),sky:program(QUAD_VS,SKY_FS),part:program(PARTICLE_VS,PARTICLE_FS),rain:program(RAIN_VS,RAIN_FS)};
+function uniform(p,n){return gl.getUniformLocation(p,n)};
+function mat4mul(a,b){let o=new Float32Array(16);for(let col=0;col<4;col++)for(let row=0;row<4;row++)for(let k=0;k<4;k++)o[col*4+row]+=a[k*4+row]*b[col*4+k];return o;}
+function perspective(fov,aspect,n,f){let t=1/Math.tan(fov/2),o=new Float32Array(16);o[0]=t/aspect;o[5]=t;o[10]=(f+n)/(n-f);o[11]=-1;o[14]=(2*f*n)/(n-f);return o;}
+function ortho(l,r,b,t,n,f){let o=new Float32Array(16);o[0]=2/(r-l);o[5]=2/(t-b);o[10]=-2/(f-n);o[12]=-(r+l)/(r-l);o[13]=-(t+b)/(t-b);o[14]=-(f+n)/(f-n);o[15]=1;return o;}
+function lookAt(eye,target,up){let z=norm(sub(eye,target)),x=norm(cross(up,z)),y=cross(z,x);let o=new Float32Array(16);o[0]=x[0];o[1]=y[0];o[2]=z[0];o[4]=x[1];o[5]=y[1];o[6]=z[1];o[8]=x[2];o[9]=y[2];o[10]=z[2];o[12]=-dot(x,eye);o[13]=-dot(y,eye);o[14]=-dot(z,eye);o[15]=1;return o;}
+const VAO=gl.createVertexArray();gl.bindVertexArray(VAO);
+function createTextureCanvas(){
+ // 16 periodic (wrap-matched) material tiles, each physically anchored in world space.
+ const e=document.createElement('canvas');e.width=e.height=512;let c=e.getContext('2d'),im=c.createImageData(512,512);
+ const colors=[[143,151,153],[141,80,54],[145,145,139],[63,68,71],[29,37,44],[139,148,151],[47,44,43],[125,63,37],[66,113,126],[197,149,48],[251,111,31],[110,120,132],[101,106,109],[91,85,76],[77,101,85],[76,93,100]];
+ const smooth=t=>t*t*(3-2*t),mix=(a,b,t)=>a+(b-a)*t;
+ const h=(x,y,n,id)=>{x=(x%n+n)%n;y=(y%n+n)%n;let k=Math.imul((x+1)*1619,(y+13)*31337)^Math.imul(id+91,6971);k=Math.imul(k^(k>>>13),1274126177);return ((k^(k>>>16))>>>0)/4294967295};
+ function vnoise(x,y,n,id){let xx=x/120*n,yy=y/120*n,ix=Math.floor(xx),iy=Math.floor(yy),fx=smooth(xx-ix),fy=smooth(yy-iy);return mix(mix(h(ix,iy,n,id),h(ix+1,iy,n,id),fx),mix(h(ix,iy+1,n,id),h(ix+1,iy+1,n,id),fx),fy);}
+ for(let y=0;y<512;y++)for(let x=0;x<512;x++){
+  let id=(y>>7)*4+(x>>7),u=((x%128)-4+120)%120,v=((y%128)-4+120)%120,off=(y*512+x)*4,bc=colors[id];
+  let coarse=vnoise(u,v,5,id),fine=vnoise(u,v,20,id+17),grain=vnoise(u,v,40,id+33);
+  let n=(coarse-.5)*39+(fine-.5)*24+(grain-.5)*18;
+  if(id===0||id===5||id===8){ // corrugated cladding with aligned vertical ribs and bolts
+    let rib=u%15; n+=rib<2?-25:rib<4?22:rib>12?-12:0;
+    if(u%15===3&&v%30>=1&&v%30<4)n-=42;
+    n+=(v%60<2?-19:0);
+  }
+  if(id===1||id===7){ // repeating oxidised metal, with long rust streaks
+    n+=Math.sin(u*Math.PI/60)*16+(coarse>.59?24:0);
+    if((u+11)%30<2)n-=9;
+  }
+  if(id===2){if(u%60<2||v%60<2)n-=31; if((u+23)%60<3&&(v+18)%60<3)n-=17;}
+  if(id===3){ // aggregate asphalt, with subtle patchwork and no grid seams
+    n=(fine-.5)*27+(grain-.5)*43+(coarse-.5)*8;
+  }
+  if(id===4){n=(fine-.5)*8; if(u%60===0)n+=24;}
+  if(id===6||id===13){n=(coarse-.5)*45+(grain-.5)*65;}
+  if(id===9){let yellow=((u+v)%40)<20;bc=yellow?[220,157,30]:[24,27,30];n=(grain-.5)*15;}
+  if(id===10){n=(coarse-.5)*44+(fine-.5)*23;}
+  if(id===11){n=(grain-.5)*10+Math.sin(v*2.513)*9;}
+  if(id===12){n=(coarse-.5)*35+(grain-.5)*41;}
+  if(id===14){n=(coarse-.5)*39+(fine-.5)*20;}
+  if(id===15){n=(fine-.5)*24+(coarse-.5)*17;}
+  for(let j=0;j<3;j++)im.data[off+j]=clamp(bc[j]+n,0,255);im.data[off+3]=255;
+ }
+ c.putImageData(im,0,0);return e;
+}
+function createSignCanvas(){
+ const e=document.createElement('canvas');e.width=e.height=1024;
+ const c=e.getContext('2d');let panels=[
+ ['RAW MATERIALS','ORE · COKE · LIME'],['BLAST FURNACE','IRONMAKING'],['COKE BATTERIES','COKEMAKING'],['SINTER PLANT','BURDEN PREPARATION'],
+ ['BASIC OXYGEN','STEELMAKING'],['SLAB CASTER','CONTINUOUS CASTING'],['HOT STRIP MILL','REHEAT & ROLLING'],['COIL STORAGE','DESPATCH'],
+ ['WORKS RAIL','FREIGHT ONLY'],['PUMP HOUSE','COOLING WATER'],['SUBSTATION','HIGH VOLTAGE'],['MAIN ACCESS','SITE VEHICLES'],
+ ['SAFETY FIRST','PPE REQUIRED'],['SPEED LIMIT','15 KM/H'],['CONTROL ROOM','OPERATIONS'],['MAINTENANCE','WORKSHOP']];
+ panels.forEach(([name,sub],id)=>{
+   let x=(id%4)*256,y=Math.floor(id/4)*256;
+   c.fillStyle='#192832';c.fillRect(x,y,256,256);
+   c.fillStyle='#eba544';c.fillRect(x+10,y+12,236,10);
+   c.strokeStyle='#a0c1bd';c.lineWidth=2;c.strokeRect(x+10,y+36,236,205);
+   c.fillStyle='#e8ece8';c.textAlign='center';
+   c.font='bold 28px Arial';let words=name.split(' '), lines=[];
+   if(name.length>15){let mid=Math.ceil(words.length/2);lines=[words.slice(0,mid).join(' '),words.slice(mid).join(' ')];}
+   else lines=[name];
+   lines.forEach((line,i)=>{let f=line.length>15?20:27;c.font='bold '+f+'px Arial';c.fillText(line,x+128,y+112+i*37,226);});
+   c.fillStyle='#e9ad6d';c.font='bold 16px monospace';c.fillText(sub,x+128,y+190,231);
+   c.fillStyle='#8da4a6';c.font='11px monospace';c.fillText('PORT KEMBLA  /  WORKS',x+128,y+223);
+ });return e;
+}
+const tex=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,tex);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,createTextureCanvas());gl.generateMipmap(gl.TEXTURE_2D);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAX_LEVEL,3);
+const signTex=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,signTex);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,createSignCanvas());gl.generateMipmap(gl.TEXTURE_2D);
+gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+class Builder{
+ constructor(){this.v=[];this.n=0;}
+ tri(a,b,c,color=C.steel,mat=0,uv=[[0,0],[1,0],[0,1]]){
+  const n=norm(cross(sub(b,a),sub(c,a)));for(let [i,p] of [a,b,c].entries()){this.v.push(...p,...n,...uv[i],...color,mat);this.n++;}
+ }
+ quad(a,b,c,d,color=C.steel,mat=0,tx=1,ty=1){this.tri(a,b,c,color,mat,[[0,0],[tx,0],[tx,ty]]);this.tri(a,c,d,color,mat,[[0,0],[tx,ty],[0,ty]]);}
+ box(x,y,z,w,h,d,color=C.steel,mat=0){let x0=x-w/2,x1=x+w/2,y0=y,y1=y+h,z0=z-d/2,z1=z+d/2;
+  this.quad([x0,y0,z1],[x1,y0,z1],[x1,y1,z1],[x0,y1,z1],color,mat,w/5,h/5);
+  this.quad([x1,y0,z0],[x0,y0,z0],[x0,y1,z0],[x1,y1,z0],color,mat,w/5,h/5);
+  this.quad([x0,y0,z0],[x0,y0,z1],[x0,y1,z1],[x0,y1,z0],color,mat,d/5,h/5);
+  this.quad([x1,y0,z1],[x1,y0,z0],[x1,y1,z0],[x1,y1,z1],color,mat,d/5,h/5);
+  this.quad([x0,y1,z1],[x1,y1,z1],[x1,y1,z0],[x0,y1,z0],color,mat,w/5,d/5);
+  this.quad([x0,y0,z0],[x1,y0,z0],[x1,y0,z1],[x0,y0,z1],color,mat,w/5,d/5);
+ }
+ panel(x,y,z,w,h,d,color,mat=0){this.box(x,y,z,w,h,d,color,mat);}
+ cyl(x,y,z,r0,r1,h,color=C.steel,mat=0,seg=12){
+  if(Math.max(r0,r1)<1.35)seg=Math.min(seg,8);
+  let y0=y,y1=y+h;
+  for(let i=0;i<seg;i++){let a=i/seg*TAU,b=(i+1)/seg*TAU;let aa=[x+Math.cos(a)*r0,y0,z+Math.sin(a)*r0],ab=[x+Math.cos(b)*r0,y0,z+Math.sin(b)*r0],ba=[x+Math.cos(a)*r1,y1,z+Math.sin(a)*r1],bb=[x+Math.cos(b)*r1,y1,z+Math.sin(b)*r1];
+    this.quad(ba,bb,ab,aa,color,mat,(r0+r1)*PI/seg/4,h/5);this.tri([x,y1,z],bb,ba,color,mat);this.tri([x,y0,z],aa,ab,color,mat);
+  }
+ }
+ tube(a,b,r,color=C.steel,mat=0,seg=8){seg=r<.21?4:r<.6?Math.min(seg,6):seg;let axis=norm(sub(b,a)),tmp=Math.abs(axis[1])>.8?[1,0,0]:[0,1,0],x=norm(cross(axis,tmp)),z=cross(axis,x);
+   for(let i=0;i<seg;i++){let A=i/seg*TAU,B=(i+1)/seg*TAU,ra=plus(mul(x,Math.cos(A)*r),mul(z,Math.sin(A)*r)),rb=plus(mul(x,Math.cos(B)*r),mul(z,Math.sin(B)*r));this.quad(plus(a,ra),plus(a,rb),plus(b,rb),plus(b,ra),color,mat,1,len(sub(b,a))/4);}
+ }
+ line(x,y,z,X,Y,Z,r=.23,col=C.steel,mat=0,seg=6){this.tube([x,y,z],[X,Y,Z],r,col,mat,seg);}
+ rail(x0,y,z0,x1,z1,spacing=2.5,level=1.2){this.line(x0,y+level,z0,x1,y+level,z1,.055,C.yellow,9);let l=Math.hypot(x1-x0,z1-z0),n=Math.max(2,Math.ceil(l/spacing));for(let i=0;i<=n;i++){let t=i/n,x=lerp(x0,x1,t),z=lerp(z0,z1,t);this.line(x,y,z,x,y+level,z,.052,C.yellow,9);}}
+ girder(a,b,w=.24,color=C.darkRust){this.tube(a,b,w,color,1,5);}
+ // Box-shaped truss along an arbitrary line with diagonal sides.
+ truss(a,b,width=3,height=3,sections=12,color=C.darkRust){const dir=norm(sub(b,a)),horizontal=norm(cross([0,1,0],dir)),up=norm(cross(dir,horizontal));const offset=(p,dx,dy)=>plus(plus(p,mul(horizontal,dx)),mul(up,dy));
+   for(let s of [-1,1])for(let t of [-1,1])this.girder(offset(a,s*width/2,t*height/2),offset(b,s*width/2,t*height/2),.14,color);
+   for(let i=0;i<=sections;i++){const f=i/sections,p=plus(a,mul(sub(b,a),f)),q=plus(a,mul(sub(b,a),(i+1)/sections));
+    for(let t of [-1,1])this.girder(offset(p,-width/2,t*height/2),offset(p,width/2,t*height/2),.08,color);
+    for(let s of [-1,1])this.girder(offset(p,s*width/2,-height/2),offset(p,s*width/2,height/2),.09,color);
+    if(i<sections){for(let s of [-1,1])this.girder(offset(p,s*width/2,-height/2),offset(q,s*width/2,height/2),.08,color);}}
+ }
+ finishChunked(cell=180){
+   const all=new Float32Array(this.v);this.v=null;
+   const groups=new Map();
+   // Each vertex is 12 floats. Three vertices form a triangle.
+   // Large triangles (terrain, road and roofs spanning cells) must not disappear.
+   for(let offset=0;offset<all.length;offset+=36){
+     const x0=all[offset],x1=all[offset+12],x2=all[offset+24];
+     const z0=all[offset+2],z1=all[offset+14],z2=all[offset+26];
+     const mnX=Math.min(x0,x1,x2),mxX=Math.max(x0,x1,x2);
+     const mnZ=Math.min(z0,z1,z2),mxZ=Math.max(z0,z1,z2);
+     const global=(mxX-mnX>cell*.75||mxZ-mnZ>cell*.75);
+     const key=global?'global':Math.floor((x0+x1+x2)/3/cell)+':'+Math.floor((z0+z1+z2)/3/cell);
+     let rec=groups.get(key);
+     if(!rec){rec={key,starts:[],minX:Infinity,maxX:-Infinity,minZ:Infinity,maxZ:-Infinity};groups.set(key,rec);}
+     rec.starts.push(offset);
+     rec.minX=Math.min(rec.minX,mnX);rec.maxX=Math.max(rec.maxX,mxX);
+     rec.minZ=Math.min(rec.minZ,mnZ);rec.maxZ=Math.max(rec.maxZ,mxZ);
+   }
+   const chunks=[];
+   for(const group of groups.values()){
+     const f=new Float32Array(group.starts.length*36);
+     for(let i=0;i<group.starts.length;i++)f.set(all.subarray(group.starts[i],group.starts[i]+36),i*36);
+     const vao=gl.createVertexArray();gl.bindVertexArray(vao);
+     const buf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buf);gl.bufferData(gl.ARRAY_BUFFER,f,gl.STATIC_DRAW);
+     const stride=12*4,attrs=[[0,3,0],[1,3,3],[2,2,6],[3,3,8],[4,1,11]];
+     for(const [idx,n,ofs] of attrs){gl.enableVertexAttribArray(idx);gl.vertexAttribPointer(idx,n,gl.FLOAT,false,stride,ofs*4);}
+     const cx=(group.minX+group.maxX)*.5,cz=(group.minZ+group.maxZ)*.5;
+     chunks.push({vao,buf,count:f.length/12,cx,cz,
+       radius:Math.hypot(group.maxX-group.minX,group.maxZ-group.minZ)*.5,
+       global:group.key==='global'});
+   }
+   return chunks;
+ }
+ finish(){const f=new Float32Array(this.v),vao=gl.createVertexArray();gl.bindVertexArray(vao);let buf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buf);gl.bufferData(gl.ARRAY_BUFFER,f,gl.STATIC_DRAW);this.v=null;const stride=12*4;const attrs=[[0,3,0],[1,3,3],[2,2,6],[3,3,8],[4,1,11]];for(let [i,n,o] of attrs){gl.enableVertexAttribArray(i);gl.vertexAttribPointer(i,n,gl.FLOAT,false,stride,o*4);}return {vao,buf,count:this.n};}
+}
+const world=new Builder();let colliders=[];let meshes=[];
+function obstacle(x,z,w,d){colliders.push([x-w/2,z-d/2,x+w/2,z+d/2]);}
+function boltPlate(x,y,z,axis='z',count=4,span=2.8,col=C.black){
+  if(axis==='z'){
+    for(let i=0;i<count;i++){let xx=x-span/2+(count===1?0:i*span/(count-1));world.cyl(xx,y,z,.08,.08,.08,col,4,6);}
+  }else{
+    for(let i=0;i<count;i++){let zz=z-span/2+(count===1?0:i*span/(count-1));world.cyl(x,y,zz,.08,.08,.08,col,4,6);}
+  }
+}
+function framedOpening(x,y,z,w,h,face='z+',frame=C.pale,glass=C.black){
+  if(face[0]==='z'){
+    let s=face==='z+'?1:-1,zz=z+s*.03;
+    world.box(x,y,z,w,h,.08,glass,4);
+    world.box(x,y+h/2+.12,zz,w+.38,.16,.12,frame,0);
+    world.box(x,y-h/2-.12,zz,w+.38,.16,.12,frame,0);
+    world.box(x-w/2-.12,y,zz,.16,h+.4,.12,frame,0);
+    world.box(x+w/2+.12,y,zz,.16,h+.4,.12,frame,0);
+    boltPlate(x,y+h/2+.12,zz,'z',Math.max(2,Math.floor(w/1.8)),Math.max(1.2,w-.55));
+  }else{
+    let s=face==='x+'?1:-1,xx=x+s*.03;
+    world.box(x,y,z,.08,h,w,glass,4);
+    world.box(xx,y+h/2+.12,z,.12,.16,w+.38,frame,0);
+    world.box(xx,y-h/2-.12,z,.12,.16,w+.38,frame,0);
+    world.box(xx,y,z-w/2-.12,.12,h+.4,.16,frame,0);
+    world.box(xx,y,z+w/2+.12,.12,h+.4,.16,frame,0);
+    boltPlate(xx,y+h/2+.12,z,'x',Math.max(2,Math.floor(w/1.8)),Math.max(1.2,w-.55));
+  }
+}
+function wallPanelSeams(x,z,w,d,h,step=8){
+  for(let xx=x-w/2+step;xx<x+w/2-.5;xx+=step){
+    world.box(xx,h/2,z-d/2-.03,.05,h-.6,.12,C.steel,0);world.box(xx,h/2,z+d/2+.03,.05,h-.6,.12,C.steel,0);
+  }
+  for(let zz=z-d/2+step;zz<z+d/2-.5;zz+=step){
+    world.box(x-w/2-.03,h/2,zz,.12,h-.6,.05,C.steel,0);world.box(x+w/2+.03,h/2,zz,.12,h-.6,.05,C.steel,0);
+  }
+  for(let yy=4;yy<h-2;yy+=7){
+    world.box(x,yy,z-d/2-.035,w-.8,.05,.09,C.darkRust,1);world.box(x,yy,z+d/2+.035,w-.8,.05,.09,C.darkRust,1);
+  }
+}
+function scoredPad(x,z,w,d,step=8,col=C.steel){
+  world.box(x,.151,z,w,.02,d,C.concrete,2);
+  for(let xx=x-w/2+step;xx<x+w/2-.2;xx+=step)world.box(xx,.19,z,.05,.02,d-.4,col,0);
+  for(let zz=z-d/2+step;zz<z+d/2-.2;zz+=step)world.box(x,.19,zz,w-.4,.02,.05,col,0);
+}
+function building(x,z,w,d,h,col=C.rust,mat=1,roofColor=C.roof){
+  world.box(x,-.05,z,w,h,d,col,mat);world.box(x,h-.07,z,w+1,.55,d+1,roofColor,0);
+  // Low-cost detail pass: corner trims, roof edges, facade seams and small bolt plates.
+  world.box(x,0.55,z,w+.18,1.0,d+.18,C.concrete,2);
+  for(let sx of [-1,1])for(let sz of [-1,1])world.box(x+sx*(w/2+.07),h/2,z+sz*(d/2+.07),.18,h+.12,.18,C.steel,0);
+  world.box(x,h+.11,z,w+.45,.08,d+.45,C.steel,0);
+  if(w>=18||d>=18)wallPanelSeams(x,z,w,d,h,Math.max(7,Math.min(12,Math.round(Math.min(w,d)/2.2))));
+  for(let face of [-1,1]){boltPlate(x,h-1.1,z+face*(d/2+.08),'z',Math.max(3,Math.floor(w/8)),Math.max(1.5,w-2.5));boltPlate(x+face*(w/2+.08),h-1.1,z,'x',Math.max(3,Math.floor(d/8)),Math.max(1.5,d-2.5));}
+  obstacle(x,z,w,d);
+}
+function smokeStack(x,z,r,h,col=C.darkRust){world.cyl(x,0,z,r,r*.88,h,col,1,18);world.cyl(x,h-1,z,r*1.04,r*1.04,1.8,C.black,4,18);for(let y=6;y<h-5;y+=12){world.cyl(x,y,z,r+.04,r+.04,.45,C.steel,0,18);}world.line(x+r+.65,0,z,x+r+.65,h-4,z,.09,C.steel,0);for(let y=4;y<h-1;y+=2){world.line(x+r+.2,y,z,x+r+.65,y,z,.07,C.steel,0);}}
+function platform(x,y,z,w,d,rail=true){world.box(x,y,z,w,.6,d,C.steel,0);if(rail){for(let sx of [-1,1])world.rail(x+sx*w/2,y,z-d/2,x+sx*w/2,z+d/2,3);for(let sz of [-1,1])world.rail(x-w/2,y,z+sz*d/2,x+w/2,z+sz*d/2,3);}}
+function industrialHall(x,z,w,d,h,col=C.rust,roofSteps=10){building(x,z,w,d,h,col,1,C.roof);for(let i=0;i<roofSteps;i++){let xx=x-w/2+(i+.5)*w/roofSteps;world.box(xx,h+.2,z,.25,1.2,d+.4,C.darkRust,1);}for(let iz=0;iz<d/8;iz++)for(let side of [-1,1]){let zz=z-d/2+3+iz*8;world.box(x+side*(w/2+.2),5,zz,.4,4,4,C.black,4);framedOpening(x+side*(w/2+.25),5.15,zz,2.8,2.8,side>0?'x+':'x-',C.pale,C.black);world.box(x+side*(w/2+.42),5.2,zz,.1,2.9,2.9,C.blue,8);}for(let iz=0;iz<4;iz++){let zz=z-d/2+5+iz*8;framedOpening(x-w/2+.98,h-3,zz,2.1,2.5,'x-',C.cream,C.black);}}
+function staircase(x,y,z,rise,run,width=2,alongZ=false){let n=Math.round(rise/.35);for(let i=0;i<n;i++){let t=(i+.5)/n,xx=alongZ?x:x+run*t,zz=alongZ?z+run*t:z;world.box(xx,y+rise*t,zz,alongZ?width:run/n+.06,.13,alongZ?run/n+.06:width,C.steel,0);}let a=[x,y,z],b=alongZ?[x,y+rise,z+run]:[x+run,y+rise,z];world.tube(plus(a,[0,0,width*.55]),plus(b,[0,0,width*.55]),.08,C.yellow,9);world.tube(plus(a,[0,0,-width*.55]),plus(b,[0,0,-width*.55]),.08,C.yellow,9);}
+function pipePath(pts,r,col=C.pipe,mat=1){for(let i=0;i<pts.length-1;i++){world.tube(pts[i],pts[i+1],r,col,mat,10);if(i>0)world.cyl(pts[i][0],pts[i][1]-.5,pts[i][2],r*1.12,r*1.12,1,col,mat,8);}}
+function turbine(x,z){world.cyl(x,0,z,6.5,5.5,36,C.sand,2,15);world.cyl(x,36,z,5.5,3.6,9,C.rust2,1,16);for(let h of [6,13,20,27,34]){world.cyl(x,h,z,6.7,6.7,.8,C.rust2,1,16);}world.line(x+8,0,z,x+8,37,z,.11,C.darkRust);for(let y=3;y<37;y+=2)world.line(x+6,y,z,x+8,y,z,.08,C.steel);}
+function furnace(x,z,index=5){
+ // Concrete plinth, furnace body and refractory-capped top.
+ world.box(x,0,z,51,2.2,48,C.concrete,2);
+ world.cyl(x,2,z,10.8,11.5,17,C.darkRust,1,18);
+ world.cyl(x,19,z,11.5,8.6,32,C.rust2,1,20);
+ world.cyl(x,51,z,8.6,7.3,12,C.darkRust,1,18);
+ world.cyl(x,63,z,7.4,6.9,11,C.steel,0,20);
+ world.cyl(x,73,z,6.9,6.9,2.1,C.black,4,20);
+ for(let h of [13,24,36,49,61,74]){world.cyl(x,h,z,11.8-h*.047,11.8-h*.047,.6,C.steel,0,20);platform(x,h,z,32-h*.16,29-h*.13,true);}
+ // Massive bustle main pipe ring.
+ let ring=[];for(let i=0;i<=32;i++){let a=TAU*i/32;ring.push([x+Math.cos(a)*16.1,15.5,z+Math.sin(a)*16.1]);}pipePath(ring,1.65,C.pipe,1);
+ for(let i=0;i<12;i++){let a=i/12*TAU,p=[x+Math.cos(a)*13,4,z+Math.sin(a)*13],q=[x+Math.cos(a)*15.9,15.2,z+Math.sin(a)*15.9];pipePath([p,[p[0],13,p[2]],q],.63,C.rust2);}
+ // Exposed steel frame with wind bracing.
+ for(let sx of [-1,1])for(let sz of [-1,1]){let xx=x+sx*21,zz=z+sz*19;world.line(xx,0,zz,xx,71,zz,.60,C.darkRust,1);for(let yy=2;yy<70;yy+=10){world.line(xx,yy,zz,x+sx*9,yy+6,z+sz*8,.24,C.darkRust,1);}}
+ for(let y of [8,22,36,50,65]){for(let sx of [-1,1]){world.line(x+sx*22,y,z-20,x+sx*22,y,z+20,.21,C.steel);for(let zz of [-20,20])world.line(x+sx*22,y,z+zz,x-sx*22,y,z+zz,.20,C.steel);}}
+ // Uptake pipes bending over furnace cap, and rectangular hot-blast distribution.
+ for(let s of [-1,1]){let xx=x+s*15;pipePath([[x+s*6,70,z],[xx,78,z],[xx,89,z],[x+s*25,89,z],[x+s*28,80,z]],1.9,C.rust2,1);}
+ world.truss([x-29,62,z+12],[x-55,64,z+12],5,4,8,C.darkRust);
+ // Stove cluster and blue hot-blast pipes, characteristic of the Port Kembla furnace area.
+ for(let i=0;i<4;i++){let sx=x+37+i*13,sz=z-28-(i%2)*8;turbine(sx,sz);pipePath([[sx,28,sz],[sx,28,sz+16],[x+16,23,z+18],[x+13,18,z+12]],1.35,C.blue,8);}
+ // Ladders and exterior catwalk.
+ staircase(x-34,2,z+11,18,19,2.2);
+ world.box(x-39,1,z+17,18,17,17,C.rust,1);world.box(x-39,18,z+17,19,.8,18,C.darkRust,1);
+ for(let y of [22,32,43]){world.box(x-38,y,z+17,16,.4,16,C.steel,0);for(let s of [-1,1])world.line(x-38+s*7,0,z+17,x-38+s*7,46,z+17,.35,C.darkRust);}
+ world.box(x-38,44,z+17,16,3,18,C.rust2,1);
+ for(let i=0;i<14;i++){let cx=x-51+(i%2)*2.3,cy=7+(i*3.6),cz=z+20;world.line(cx,cy,cz,cx,cy+2,cz,.11,C.steel);}
+ world.box(x,76,z,13,.8,13,C.steel,0);
+ for(let i=0;i<8;i++){let a=i/8*TAU,rr=6;world.line(x+Math.cos(a)*rr,76,z+Math.sin(a)*rr,x+Math.cos(a)*rr,83,z+Math.sin(a)*rr,.09,C.yellow);}
+ // Distinct tall flue and its steel lattice bracing.
+ smokeStack(x-61,z-33,3.6,115,C.rust2);
+ world.truss([x-61,0,z-33],[x-61,105,z-33],8,7,16,C.steel);
+ return [x,82,z];
+}
+function conveyor(a,b,width=6,col=C.rust2,withCanopy=true){
+ // Functional trussed belt line: continuous belt, side trough, idler rollers,
+ // maintenance walkway, handrail, support bents and weather covers.
+ const aa=[...a],bb=[...b],d=sub(bb,aa),distance=len(d),dir=norm(d);
+ const side=norm(cross([0,1,0],dir)),vertical=norm(cross(dir,side));
+ const point=(p,s,u)=>plus(plus(p,mul(side,s)),mul(vertical,u));
+ world.truss(aa,bb,width,3,Math.max(5,Math.round(distance/7)),C.darkRust);
+ world.quad(point(aa,-width*.46,.73),point(bb,-width*.46,.73),point(bb,width*.46,.73),point(aa,width*.46,.73),C.black,4,distance/3,width/3);
+ // Belt material is held between trough idlers, not an oversized suspended pipe.
+ world.quad(point(aa,-width*.27,.86),point(bb,-width*.27,.86),point(bb,width*.27,.86),point(aa,width*.27,.86),C.ore,6,distance/3,width/3);
+ for(let i=0;i<Math.max(2,Math.ceil(distance/3));i++){
+  const q=plus(aa,mul(d,(i+.5)/Math.ceil(distance/3)));
+  world.tube(point(q,-width*.49,.7),point(q,width*.49,.7),.12,C.steel,11,6);
+  for(let s of [-1,1])world.line(...point(q,s*width*.48,.5),...point(q,s*width*.40,1.1),.09,C.rust2,1,5);
+ }
+ // Dedicated maintenance walkway with guardrail, carried alongside belt.
+ world.quad(point(aa,width*.56,-.36),point(bb,width*.56,-.36),point(bb,width*.91,-.36),point(aa,width*.91,-.36),C.steel,11,distance/3,1.5);
+ const n=Math.max(3,Math.ceil(distance/9));
+ for(let i=0;i<=n;i++){
+  let q=plus(aa,mul(d,i/n));
+  world.line(...point(q,width*.86,-.35),...point(q,width*.86,1.1),.07,C.yellow,9,5);
+  if(i>0){let old=plus(aa,mul(d,(i-1)/n));world.line(...point(old,width*.86,1.07),...point(q,width*.86,1.07),.07,C.yellow,9,5);}
+ }
+ if(withCanopy){
+  let ar=point(aa,0,3.4),br=point(bb,0,3.4);
+  world.truss(ar,br,width+1.4,1.6,Math.max(4,Math.round(distance/9)),col);
+  for(let i=0;i<Math.max(2,Math.ceil(distance/11));i++){
+    let t0=i/Math.ceil(distance/11),t1=(i+1)/Math.ceil(distance/11),p0=plus(aa,mul(d,t0)),p1=plus(aa,mul(d,t1));
+    world.quad(point(p0,-width*.62,4.0),point(p1,-width*.62,4.0),point(p1,0,4.7),point(p0,0,4.7),col,1,2,2);
+    world.quad(point(p0,0,4.7),point(p1,0,4.7),point(p1,width*.62,4.0),point(p0,width*.62,4.0),col,1,2,2);
+  }
+ }
+ for(let i=1;i<n;i++){
+   let q=plus(aa,mul(d,i/n));
+   if(q[1]>5){for(let s of [-1,1]){
+     let base=point(q,s*width*.55,-1.7);
+     world.line(base[0],base[1],base[2],base[0],0,base[2],.30,C.rust2,1);
+   }}
+ }
+}
+function coolingUnit(x,z){world.box(x,0,z,39,20,29,C.cream,5);world.box(x,20,z,41,.9,30,C.rust2,1);for(let ix=0;ix<6;ix++)for(let iz=0;iz<4;iz++){world.box(x-17+ix*7,20.5,z-12+iz*8,5,1.3,5,C.black,4);world.cyl(x-17+ix*7,21.8,z-12+iz*8,2,2,.6,C.steel,0,10);}obstacle(x,z,39,29);}
+function lightMast(x,z,h=25){world.cyl(x,0,z,.55,.24,h,C.steel,0,8);world.box(x,h,z,5.5,.55,1,C.darkRust,1);for(let i=-2;i<=2;i++){world.box(x+i, h-.55,z+.38,.77,.83,.4,C.white,11);}world.line(x,0,z,x+1,1,z,.17,C.steel);}
+function coil(x,y,z,r=4){world.cyl(x,y,z,r,r,1.6,C.rail,12,24);world.cyl(x,y,z,r*.31,r*.31,1.65,C.black,4,24);}
+function trainCar(x,z,orientation=1,tank=false){let b=new Builder();b.box(x,.8,z,13,2.6,4.6,C.darkRust,1);for(let xx of [x-4,x+4])for(let zz of [z-1.6,z+1.6])b.cyl(xx,.25,zz,.75,.75,.6,C.black,4,10);if(tank){b.cyl(x,2.8,z,2.2,2.2,11,C.rust2,1,14);}else{b.box(x,3.2,z,11,2.6,3.7,C.ore,7);}return b;}
+function sparkCrane(x,z,angle=0){world.box(x,0,z,8,4,8,C.darkRust,1);world.truss([x,4,z],[x,57,z],6,6,15,C.rust2);world.truss([x,55,z],[x+60,53,z],4,4,13,C.darkRust);world.truss([x,55,z],[x-26,50,z],3,3,7,C.darkRust);for(let i=0;i<11;i++){let t=(i+1)/11;world.line(x+60*t,54-2*t,z,x+20*t,42-3*t,z,.1,C.steel);}world.line(x+47,53,z,x+47,6,z,.12,C.black);world.box(x+47,5,z,4,2.2,5,C.black,4);}
+function orePile(x,z,r,h,colour=C.ore,mat=7){let segments=22,rings=5;let radial=[];for(let i=0;i<=segments;i++)radial.push(range(.78,1.14));for(let j=0;j<rings;j++){let r0=r*j/rings,r1=r*(j+1)/rings;for(let i=0;i<segments;i++){let a=i/segments*TAU,b=(i+1)/segments*TAU;const p=(rr,theta)=>{let yy=h*Math.pow(Math.max(0,1-rr/r),1.25)+range(-.18,.18);return [x+rr*Math.cos(theta)*radial[i],yy,z+rr*Math.sin(theta)*radial[i]];};let A=p(r0,a),B=p(r1,a),D=p(r0,b),E=p(r1,b);world.quad(A,B,E,D,colour,mat,2,2);}}}
+function tanks(x,z,cols=4,rows=2){for(let i=0;i<cols;i++)for(let j=0;j<rows;j++){let xx=x+i*15,zz=z+j*17,hh=range(15,23),r=5.1;world.cyl(xx,0,zz,r,r,hh,C.pale,0,18);world.cyl(xx,hh,zz,r,r*.55,4,C.pale,0,18);for(let k=0;k<3;k++)world.cyl(xx,3+k*6,zz,r+.1,r+.1,.3,C.steel);world.line(xx+r+.6,0,zz,xx+r+.6,hh+3,zz,.1,C.steel);}}
+function car(x,z,col=C.yellow){world.box(x,.7,z,5.2,2.4,2.7,col,8);world.box(x+.8,2.55,z,2.5,1.4,2.5,C.cream,5);for(let xx of [x-1.7,x+1.6])for(let zz of [z-1.25,z+1.25])world.cyl(xx,.35,zz,.63,.63,.4,C.black,4,9);world.box(x,3.7,z,2.7,.22,2.1,C.steel,0);}
+function borderFence(x,z,X,Z,h=2.8){let n=Math.ceil(Math.hypot(X-x,Z-z)/3);for(let i=0;i<=n;i++){let t=i/n,px=lerp(x,X,t),pz=lerp(z,Z,t);world.line(px,0,pz,px,h,pz,.11,C.steel,0);}for(let yy of [.4,1.1,2.1,2.8])world.line(x,yy,z,X,yy,Z,.045,C.steel);}
+function warehouseDoors(x,z,w,d){for(let i=0;i<5;i++){let xx=x-w/2+8+i*(w-16)/4;world.box(xx,1,z+d/2+.05,8,13,.25,C.black,4);world.box(xx,12.8,z+d/2+.22,8,.4,.22,C.yellow,9);for(let k=0;k<5;k++)world.box(xx,2+k*2.1,z+d/2+.3,8,.18,.12,C.rust2,1);}}
+function signage(x,y,z,w,h,text,forward=true){ // geometry sign; text is drawn separately as in-world HTML-like decal textures not essential
+ world.box(x,y,z,w,h,.18,C.darkRust,4);world.box(x,y+.22,z+(.12),w-.3,h-.45,.07,C.cream,5);
+}
+// ----------------------------------------------------------
+// Site: a navigable impression of BlueScope's Port Kembla plant.
+// Zones are placed in the same broad industrial relationship as
+// public maps, but this is NOT a survey / a faithful working layout.
+// ----------------------------------------------------------
+// Earth, coastal apron, roads and drainage.
+world.box(-135,-1.9,-70,1510,1.7,1220,[.30,.30,.27],13);
+world.box(-205,-.12,-40,1190,.22,930,C.concrete,2);
+
+// Road geometry: broad, used industrial access routes.
+world.box(0,.005,-25,18,.13,680,C.black,3);
+world.box(65,.016,57,480,.14,16,C.black,3);
+world.box(-155,.02,-174,250,.15,14,C.black,3);
+world.box(228,.02,-104,310,.15,17,C.black,3);
+for(let z=-350;z<300;z+=12)world.box(0,.10,z,0.2,.013,5,C.cream,5);
+for(let x=-220;x<300;x+=12)world.box(x,.12,57,5,.013,.2,C.cream,5);
+
+// Wide concrete slabs and drainage channels.
+for(let z=-345;z<320;z+=30){world.box(-62,.09,z,9,.08,26,C.concrete,2);world.box(25,.10,z,2,.06,29,C.steel,0);}
+for(let x=-340;x<320;x+=18)world.box(x,.02,342,17,.06,7,C.black,3);
+for(let i=0;i<11;i++){world.box(-360+i*16,.02,368,14,.04,7,C.ore,7);}
+// Coal and iron ore heaps to the south-west of ironmaking.
+for(let i=0;i<9;i++){let x=-250+i*33,z=170+(i%2)*64;orePile(x,z,range(18,30),range(8,18),i%3?[.25,.23,.22]:[.43,.24,.16],i%3?6:7);}
+conveyor([-292,7,166],[-130,37,115],6,C.rust2);
+conveyor([-130,37,115],[40,62,-86],7,C.rust2);
+conveyor([-312,6,235],[-130,18,235],6,C.rust2);
+// Stacker-reclaimer silhouette, enormous boom.
+world.truss([-178,1,165],[-178,24,165],7,8,6,C.rust2);world.truss([-178,23,165],[-95,16,193],3,3,16,C.darkRust);world.truss([-178,22,165],[-218,11,155],3,3,8,C.darkRust);
+for(let i=0;i<12;i++)world.line(-178+range(-13,13),0,164+range(-8,8),-178+range(-13,13),range(3,8),164+range(-8,8),.2,C.steel);
+// The blast-furnace complex dominates the landscape.
+furnace(52,-142,5);
+furnace(174,-282,6);
+// Sinter plant: wide ochre blocks and diagonal enclosed conveyors.
+industrialHall(251,-128,105,104,34,C.rust2,20);
+industrialHall(311,-158,48,120,24,C.darkRust,8);
+warehouseDoors(251,-128,105,104);
+conveyor([339,15,-28],[264,46,-140],8,C.rust2);
+conveyor([346,15,30],[314,42,-98],6,C.darkRust);
+conveyor([98,21,-143],[255,45,-133],7,C.rust2);
+for(let i=0;i<4;i++)smokeStack(297+i*14,-240,2.5,range(76,103),i%2?C.rust2:C.darkRust);
+for(let i=0;i<6;i++)turbine(364+i*13,-205-(i%2)*19);
+coolingUnit(350,-108);
+// Mill / steelmaking hall to west - the intense orange tap bay.
+industrialHall(-192,-193,142,98,58,C.darkRust,21);
+industrialHall(-294,-216,82,140,35,C.rust2,11);
+warehouseDoors(-192,-193,142,98);
+world.box(-177,2,-143,28,30,1.5,C.black,4);
+world.box(-176,1,-141.6,20,9,.6,C.orange,10); // open steel pouring glow
+world.box(-173,0.6,-138,7,1.2,13,[.95,.35,.06],10);
+for(let i=0;i<8;i++){let xx=-203+i*5;world.box(xx,1,-145,1.2,7,2,C.steel,0);}
+smokeStack(-272,-303,3.7,138,C.rust2);
+smokeStack(-300,-303,3.3,117,C.darkRust);
+conveyor([-305,22,-232],[-208,29,-235],7,C.rust2);
+// Coke ovens, south-east of ironmaking.
+industrialHall(188,159,215,56,14,C.darkRust,28);
+world.box(188,14.1,159,217,1.5,57,C.rust2,1);
+for(let i=0;i<64;i++){let x=82+i*3.33;world.box(x,0,187.2,2.4,8.7,.7,C.black,4);world.box(x,3.4,187.6,1.3,3.7,.3,i%11===0?C.orange:C.rust2,i%11===0?10:1);world.box(x,10.4,187.4,2.4,.18,.3,C.yellow,9);}
+for(let i=0;i<4;i++)smokeStack(98+i*24,220,2.7,71,C.darkRust);
+conveyor([240,22,116],[215,16,183],5,C.rust2);
+// Plant gas holders and water tanks.
+tanks(-326,-18,4,3);
+tanks(276,258,4,2);
+world.cyl(-301,0,109,20,20,31,C.sand,2,24);world.cyl(-301,31,109,20,17,7,C.cream,5,24);
+for(let a=0;a<TAU;a+=TAU/16){let x=-301+Math.cos(a)*21,z=109+Math.sin(a)*21;world.line(x,0,z,x,40,z,.26,C.darkRust);}world.cyl(-301,39,109,21,21,1,C.darkRust,1,26);
+// Pump house and smaller secondary warehouses.
+// Ancillary rooms are placed deliberately with road access, no random warehouse intersections.
+for(let [x,z,w,d,h] of [[-117,152,30,31,12],[-110,242,27,30,11],[312,323,32,26,12],[337,332,22,23,8]]){
+ building(x,z,w,d,h,C.sand,5);world.box(x,2.5,z+d/2+.12,4.8,4.2,.18,C.black,4);
+ for(let s of [-1,1])world.line(x+s*(w/2-2),0,z+d/2+1,x+s*(w/2-2),h-1,z+d/2+1,.09,C.pipe);
+}
+// Massive overhead multi-pipe racks and truss footbridges.
+for(let z of [-65,-54,-43]){for(let x=-175;x<290;x+=18){world.line(x,0,z,x,11,z,.23,C.rust2,1);world.line(x,11,z,x+18,11,z,.22,C.rust2,1);world.line(x,4,z,x+18,11,z,.12,C.steel);}for(let k=0;k<6;k++)world.line(-185,12+k*.72,z,300,12+k*.72,z,.24,k%2?C.blue:C.pipe,k%2?8:1);}
+for(let x of [-80,118,220]){world.truss([x,18,-8],[x,18,40],3.4,2.6,11,C.darkRust);staircase(x-10,0,33,18,10,2.4);}
+// Narrow industrial rail lines and sleeper ballast.
+for(let z of [80,87,315,323]){world.box(0,.04,z,680,.24,5.4,C.ore,6);for(let x=-325;x<325;x+=2.7)world.box(x,.24,z,1.1,.18,5.4,C.darkRust,1);
+ for(let dz of [-1.07,1.07])world.box(0,.39,z+dz,680,.17,.14,C.pale,11);}
+// Parked rail wagons on four tracks.
+for(let i=0;i<14;i++){let bx=-256+i*20,bz=315+(i%2)*7.7;world.box(bx,.9,bz,15.5,2.1,4.2,i%4===0?C.ore:C.darkRust,1);world.box(bx,2.5,bz,14.5,3.4,3.9,C.black,4);for(let xx of [-4.8,4.8])for(let zz of [-1.5,1.5])world.cyl(bx+xx,.1,bz+zz,.84,.84,.9,C.black,4,10);}
+// Port Kembla harbour: a big sheet of moving dark blue water east of furnaces.
+world.box(515,-.28,-145,350,.16,940,[.35,.48,.58],15);
+world.box(365,.12,-150,22,1.4,680,C.concrete,2);
+world.box(370,1.45,-150,16,.17,680,C.cream,2);
+for(let z=-450;z<280;z+=16)world.box(374,1.55,z,4,.15,1.4,C.black,3);
+for(let z of [-350,-170,70])sparkCrane(383,z);
+for(let z of [-250,-90,170]){world.box(490,.2,z,100,12,25,C.rust2,1);world.box(489,12,z,70,12,22,C.cream,5);for(let i=0;i<8;i++)world.box(452+i*10,24,z,8,3,17,pick([C.blue,C.rust,C.cream]),8);}
+// Small dock silos across the waterfront.
+for(let i=0;i<9;i++)world.cyl(431+i*15,2,270,6,6,27,C.pale,5,15);
+// Deep mountain ridgeline west of the plant.
+for(let i=0;i<48;i++){let z=-500+i*23,x=-475-range(0,45),height=range(26,90);world.cyl(x,-8,z,26,0,height,[.27,.32,.32],13,6);}
+// Roadside lines of floodlights, lamp heads and secondary equipment.
+for(let z=-330;z<280;z+=52){lightMast(-14,z,27);if(z%2===0)lightMast(25,z+7,24);}
+for(let x=-270;x<320;x+=70){lightMast(x,46,25);if(x%3===0)lightMast(x,-58,21);}
+// Small utility drums grouped inside the actual utilities area.
+for(let k=0;k<3;k++)for(let j=0;j<4;j++)world.cyl(280+k*5,.2,304+j*6,1.3,1.3,2.5,C.blue,8,10);
+// Service vehicles and forklifts.
+for(let [x,z,col] of [[-21,114,C.yellow],[-27,-32,C.cream],[38,177,C.rust2],[-174,33,C.yellow],[285,45,C.cream],[214,-28,C.yellow]])car(x,z,col);
+// Forklifts travel along paved service yards and stop beside loading doors.
+for(let [x,z] of [[-17,187],[242,44],[-101,71],[-382,78]]){
+ world.box(x,.25,z,4.2,.8,2.5,C.darkRust,1);world.box(x,1.15,z,2.4,2.3,2.1,C.yellow,9);
+ for(let d of [-1,1]){world.line(x+1.9,.3,z+d*1.1,x+1.9,3.8,z+d*1.1,.15,C.black,4);world.line(x+2.3,1.3,z+d*.65,x+5,1.3,z+d*.65,.11,C.steel);}
+}
+// Catwalk railings, road debris and heavy cable equipment.
+for(let z=-320;z<270;z+=20){let zz=z+range(-2,2);world.box(-40,.03,zz,range(1,4),.05,range(.5,2),C.darkRust,1);}
+for(let i=0;i<5;i++){let x=range(-44,-30),z=-23+i*9;world.cyl(x,0,z,2.4,2.4,1.9,C.darkRust,1,12);world.cyl(x,1.9,z,1.6,1.6,.3,C.black,4,12);}
+for(let x of [-42,-23,306])borderFence(x,-41,x,-3);
+for(let i=0;i<6;i++){let x=-140+i*25;world.box(x,.4,120,7,2.3,4,C.ore,7);}
+// Lit flare, sparks and furnace structures placed to draw the eye from the starting road.
+world.cyl(104,13,-197,2.3,2.3,8,C.darkRust,1,12);world.cyl(104,21,-197,2.2,1.2,5,C.orange,10,12);
+// Supply pipes linking outer factory blocks.
+for(let i=0;i<7;i++){let z=-280+i*9;pipePath([[80,5,z],[97,10,z],[110,10,z],[110,15,z+25]],.45+(i%3)*.12,pick([C.blue,C.pipe,C.steel]),i%2?1:8);}
+// Cast shadows and details: many ventilator caps and steel cradles.
+
+// --- A physically-connected downstream works. Public-process inspired, not actual surveyed plans. ---
+function locationSign(x,y,z,w,h,id,face='z+'){
+  let a,b,c,d;
+  if(face==='x+') {a=[x,y,z+w/2];b=[x,y,z-w/2];c=[x,y+h,z-w/2];d=[x,y+h,z+w/2];}
+  else if(face==='x-'){a=[x,y,z-w/2];b=[x,y,z+w/2];c=[x,y+h,z+w/2];d=[x,y+h,z-w/2];}
+  else if(face==='z-'){a=[x+w/2,y,z];b=[x-w/2,y,z];c=[x-w/2,y+h,z];d=[x+w/2,y+h,z];}
+  else{a=[x-w/2,y,z];b=[x+w/2,y,z];c=[x+w/2,y+h,z];d=[x-w/2,y+h,z];}
+  world.box(x,y-.55,z,w+1,.08,face[0]==='z'?.55:w+1,C.steel,0);world.quad(a,b,c,d,C.white,16+id);
+}
+function loadingDoors(x,z,w,d,count=5,front='z+'){
+  for(let i=0;i<count;i++){
+    let p=(i+.5)/count-.5,xx=x+p*(w-6),zz=z+p*(d-6),y=1.1;
+    if(front[0]==='z'){
+      let dz=z+(front==='z+'?d/2+.22:-d/2-.22),m=front==='z+'?1:-1;
+      world.box(xx,y+5,dz,Math.min(8,w/count-2),9,.32,C.black,4);
+      world.box(xx,y+5,dz+m*.2,Math.min(7.6,w/count-2.3),8.8,.14,C.rust2,1);
+      for(let t=0;t<7;t++)world.box(xx,y+1.2+t*1.13,dz+m*.36,Math.min(7,w/count-2.8),.10,.13,C.steel,0);
+      world.box(xx,y+9.5,dz+m*.3,Math.min(8.7,w/count-1.3),.34,.6,C.yellow,9);
+    }else{
+      let dx=x+(front==='x+'?w/2+.22:-w/2-.22),m=front==='x+'?1:-1;
+      world.box(dx,y+5,zz,.32,9,Math.min(8,d/count-2),C.black,4);
+      world.box(dx+m*.22,y+5,zz,.14,8.8,Math.min(7.6,d/count-2.2),C.rust2,1);
+      for(let t=0;t<7;t++)world.box(dx+m*.37,y+1.2+t*1.13,zz,.13,.10,Math.min(7,d/count-2.8),C.steel,0);
+    }
+  }
+}
+function detailedHall(x,z,w,d,h,mat=1,color=C.rust2,openFace='z+'){
+  building(x,z,w,d,h,color,mat,C.darkRust);
+  let bays=Math.round(w/11),pitch=w/bays;
+  scoredPad(x,z,w+5,d+5,10,C.darkRust);
+  for(let k=0;k<=bays;k++){
+    let xx=x-w/2+k*pitch;
+    world.box(xx,0,z-d/2-.65,1.3,h,1.4,C.darkRust,1);
+    world.box(xx,0,z+d/2+.65,1.3,h,1.4,C.darkRust,1);
+    // aligned cladding bands deliberately stay on the same 3.5m world texture grid.
+    for(let yy=8;yy<h-2;yy+=9){world.line(xx,yy,z-d/2-1,xx,yy,z+d/2+1,.06,C.steel);}
+    if(k<bays){
+      let bx=xx+pitch*.5;
+      framedOpening(bx,h-4.2,z-d/2-.06,Math.max(2.6,pitch-2.4),2.8,'z-',C.pale,C.black);
+      framedOpening(bx,h-4.2,z+d/2+.06,Math.max(2.6,pitch-2.4),2.8,'z+',C.pale,C.black);
+    }
+  }
+  for(let p=0;p<Math.ceil(d/13);p++){
+    let zz=z-d/2+(p+.5)*d/Math.ceil(d/13);
+    world.box(x,h+.58,zz,w-3,.45,2.1,C.steel,0);
+    for(let s of [-1,1])world.box(x+s*(w/2-4),h+.18,zz,2.5,1.6,6,C.pale,5);
+  }
+  loadingDoors(x,z,w,d,Math.max(2,Math.floor(w/19)),openFace);
+  // Roof gutters and downpipes, physically attached.
+  for(let s of [-1,1]){
+   world.line(x-s*w/2,h+.5,z-d/2,x-s*w/2,h+.5,z+d/2,.12,C.pipe);
+   for(let k=0;k<4;k++){let zz=z-d/2+5+k*(d-10)/3;world.line(x+s*(w/2+.4),0,zz,x+s*(w/2+.4),h,zz,.13,C.steel);}
+  }
+}
+
+function openShed(x,z,w,d,h,bays=6){
+  // Open-sided industrial shed with a believable structural bay rhythm.
+  const halfW=w/2, halfD=d/2, pitch=w/bays;
+  scoredPad(x,z,w+3,d+3,9,C.steel);
+  world.box(x,h+.45,z,w+1.2,.9,d+1.2,C.roof,0);
+  world.box(x,h+1.2,z,w-3,.45,d-3,C.darkRust,1);
+  for(let i=0;i<=bays;i++){
+    let xx=x-halfW+i*pitch;
+    for(let s of [-1,1]){world.box(xx,0,z+s*(halfD-.6),.9,h,.9,C.darkRust,1);boltPlate(xx,h-.2,z+s*(halfD-.6), 'x',2,.5);}
+    if(i<bays){
+      let bx=xx+pitch*.5;
+      world.line(bx,2,z-halfD+.65,bx,h-1.6,z+halfD-.65,.09,C.steel);
+    }
+  }
+  for(let j=0;j<Math.max(2,Math.round(d/12));j++){
+    let zz=z-halfD+(j+.5)*d/Math.max(2,Math.round(d/12));
+    world.box(x,h+.85,zz,w-.8,.22,1.2,C.steel,0);
+    boltPlate(x,h+.95,zz,'z',Math.max(3,Math.floor(w/8)),Math.max(2,w-5));
+  }
+  for(let s of [-1,1]){
+    world.line(x-halfW,.25,z+s*(halfD-.6),x+halfW,.25,z+s*(halfD-.6),.08,C.concrete,2);
+    world.line(x-halfW,h,z+s*(halfD-.6),x+halfW,h,z+s*(halfD-.6),.11,C.steel);
+  }
+}
+function workRoad(x,z,w,d,dir='z',line=true){
+ world.box(x,.12,z,w,.18,d,C.black,3);
+ if(dir==='z'){
+   for(let zz=z-d/2+6;zz<z+d/2-3;zz+=16)if(line)world.box(x,.23,zz,.22,.023,5,C.cream,5);
+   for(let s of [-1,1]){world.box(x+s*(w/2+.45),.10,z,.45,.3,d,C.concrete,2);for(let zz=z-d/2+7;zz<z+d/2-1;zz+=7.5)world.box(x+s*(w/2+.45),.28,zz,.52,.03,.08,C.steel,0);}
+ }else{
+   for(let xx=x-w/2+6;xx<x+w/2-3;xx+=16)if(line)world.box(xx,.23,z,5,.023,.22,C.cream,5);
+   for(let s of [-1,1]){world.box(x,.10,z+s*(d/2+.45),w,.3,.45,C.concrete,2);for(let xx=x-w/2+7;xx<x+w/2-1;xx+=7.5)world.box(xx,.28,z+s*(d/2+.45),.08,.03,.52,C.steel,0);}
+ }
+}
+function grateDrain(x,z,len,along='z'){
+ if(along==='z')world.box(x,.17,z,.9,.1,len,C.black,4);else world.box(x,.17,z,len,.1,.9,C.black,4);
+ for(let s=-len/2+.45;s<len/2;s+=.72)if(along==='z')world.box(x,.22,z+s,.78,.07,.15,C.steel,11);else world.box(x+s,.22,z,.15,.07,.78,C.steel,11);
+}
+function overheadRack(points,num=4,height=12){
+ // Pipe rack with regular supports, only over process corridors.
+ for(let e=0;e<points.length-1;e++){
+  let a=points[e],b=points[e+1],d=sub(b,a),dist=len(d),n=Math.ceil(dist/12);
+  for(let j=0;j<=n;j++){
+   let p=plus(a,mul(d,j/n));for(let s of [-1,1]){world.line(p[0],0,p[2]+s*2.9,p[0],height,p[2]+s*2.9,.21,C.darkRust);}
+   world.line(p[0],height,p[2]-2.9,p[0],height,p[2]+2.9,.18,C.rust2);
+  }
+  for(let i=0;i<num;i++)world.line(a[0],height+.7+i*.65,a[2]-2.2,b[0],height+.7+i*.65,b[2]-2.2,.16,i%3===0?C.blue:C.pipe,i%3===0?8:1);
+ }
+}
+function straightRail(x0,z,x1,heavy=true){
+ let len=x1-x0,cx=(x0+x1)*.5;world.box(cx,.08,z,len,.22,5.8,C.ore,6);
+ for(let x=x0+.5;x<x1;x+=2.5)world.box(x,.29,z,.44,.17,5.0,C.darkRust,1);
+ for(let side of [-1.06,1.06])world.box(cx,.49,z+side,len,.18,.17,C.pale,11);
+}
+function truck(x,z,color=C.cream){
+ world.box(x,.65,z,9.3,2.1,3.2,C.steel,0);
+ world.box(x+3.0,2.65,z,2.8,2.9,3.1,color,5);
+ world.box(x-1.4,2.2,z,5.1,3.4,3.1,C.darkRust,1);
+ for(let xx of [x-3.0,x+.1,x+3.3])for(let s of [-1,1])world.cyl(xx,.23,z+s*1.7,.92,.92,.6,C.black,4,10);
+ world.box(x+4.5,3.2,z,0.2,.9,2.3,C.blue,8);
+}
+function steelCoil(x,y,z,r=2.55,depth=2.3){
+ let n=28,R=r,inner=r*.29;
+ // Hollow heavy steel coil, axis along X, rather than a solid cylinder.
+ for(let i=0;i<n;i++){
+   let a=i/n*TAU,b=(i+1)/n*TAU;
+   let p=(xx,rr,ang)=>[xx,y+Math.cos(ang)*rr,z+Math.sin(ang)*rr];
+   world.quad(p(x-depth/2,R,a),p(x-depth/2,R,b),p(x+depth/2,R,b),p(x+depth/2,R,a),C.steel,11,1,1);
+   world.quad(p(x+depth/2,inner,a),p(x+depth/2,inner,b),p(x-depth/2,inner,b),p(x-depth/2,inner,a),C.darkRust,11,1,1);
+   for(let side of [-1,1])world.quad(p(x+side*depth/2,R,a),p(x+side*depth/2,inner,a),p(x+side*depth/2,inner,b),p(x+side*depth/2,R,b),C.steel,11,1,1);
+ }
+ for(let xx of [x-depth/2+.23,x+depth/2-.23])for(let i=0;i<n;i++){
+   let a=i/n*TAU,b=(i+1)/n*TAU;
+   world.line(xx,y+Math.cos(a)*R,z+Math.sin(a)*R,xx,y+Math.cos(b)*R,z+Math.sin(b)*R,.04,C.black,4,5);
+ }
+ world.box(x,y-r-.3,z,3.3,.4,2.8,C.darkRust,1);
+}
+function powerTransformer(x,z){
+ world.box(x,.1,z,10,4.8,5.6,C.blue,8);
+ for(let i=0;i<13;i++)for(let s of [-1,1])world.box(x-4+i*.66,1,z+s*3.0,.15,3.8,.85,C.steel,0);
+ for(let i=0;i<3;i++){
+   let xx=x-3+i*3.2;
+   world.cyl(xx,4.8,z,1.1,.95,2.4,C.pale,5,10);
+   world.cyl(xx,7.3,z,.32,.32,1.8,C.steel,0,10);
+   for(let k=0;k<4;k++)world.cyl(xx,5.5+k*.62,z,.93,.93,.15,C.cream,5,8);
+ }
+}
+function gantryBridge(x,z,w=90,h=22){
+ for(let s of [-1,1]){
+   let xx=x+s*w/2;world.line(xx,0,z-9,xx,h,z-9,.5,C.yellow,9);world.line(xx,0,z+9,xx,h,z+9,.5,C.yellow,9);
+ }
+ world.truss([x-w/2,h,z],[x+w/2,h,z],8,5,Math.round(w/7),C.rust2);
+ world.box(x,h+3,z,12,4.2,8,C.yellow,9);
+ for(let dy of [-4,4])world.line(x,h-2,z+dy,x,2,z+dy,.14,C.black,4);
+ world.box(x,2,z,10,.8,9,C.darkRust,1);
+}
+function vessel(x,z){
+ world.cyl(x,9,z,6.2,5.2,13,C.rust2,1,18);world.cyl(x,22,z,5.2,7.0,6,C.darkRust,1,18);
+ for(let s of [-1,1])world.line(x+s*8,0,z,x+s*8,26,z,.56,C.steel,0);
+ world.box(x,1,z,21,2.4,18,C.concrete,2);
+ for(let zz of [-9,9])world.line(x-10,12,z+zz,x+10,12,z+zz,.15,C.yellow,9);
+}
+// 1. Berth-to-stockpile reception: unloading bridge, transfer tower and screened hoppers.
+world.box(312,.15,263,78,.2,45,C.concrete,2);
+for(let i=0;i<3;i++){
+  let zz=235+i*19;world.truss([360,16,zz],[420,39,zz],7,8,9,C.rust2);
+  world.line(414,0,zz,414,39,zz,.5,C.steel);world.line(363,0,zz,363,16,zz,.5,C.steel);
+}
+world.box(324,0,272,34,24,23,C.darkRust,1);
+for(let i=0;i<4;i++){let x=310+i*9;world.cyl(x,1,270,2.1,3.2,11,C.rust2,1,10);world.box(x,11,270,5.5,2,5.5,C.steel,0);}
+conveyor([335,23,254],[220,25,254],6,C.rust2);
+conveyor([220,25,254],[38,25,254],6,C.rust2);
+conveyor([38,25,254],[-143,22,254],6,C.rust2);
+conveyor([-143,22,254],[-230,13,205],6,C.rust2);
+// Belt feed towers, walkable service access and coal/ore feed at the screens.
+for(let [x,z] of [[220,254],[38,254],[-143,254],[-230,207]]){
+ world.box(x,0,z,12,16,12,C.rust2,1);platform(x,16,z,17,16);
+ staircase(x-9,0,z+7,16,12,1.8);
+}
+locationSign(-194,12,193,24,8,0);
+// 2. Multiple physically directed conveyor branches deliver inputs to their destination.
+conveyor([-188,22,220],[-45,26,138],6,C.darkRust);
+conveyor([-45,26,138],[112,32,9],6,C.darkRust);
+conveyor([112,32,9],[229,40,-95],6,C.rust2); // ore to sinter
+conveyor([-147,18,236],[48,21,202],5,C.darkRust);
+conveyor([48,21,202],[120,22,184],5,C.darkRust); // coal to battery
+conveyor([201,19,149],[115,29,48],5,C.rust2);
+conveyor([115,29,48],[72,72,-113],5,C.rust2); // coke toward furnace charging
+conveyor([256,46,-147],[131,68,-148],6,C.darkRust);
+conveyor([131,68,-148],[59,77,-143],6,C.darkRust); // sinter feed to furnace throat
+// 3. Stockhouse, ore screening, charging and dust collection detail.
+for(let i=0;i<7;i++){
+ let x=92+i*9,z=-74,baseY=13;
+ world.box(x,0,z,7.5,13,7.5,C.darkRust,1);
+ world.cyl(x,baseY,z,3.8,5.0,5,C.rust2,1,12);
+ world.cyl(x,18,z,2.2,2.2,2.2,C.steel,0,12);
+ world.line(x,12,z,x,2,z-9,.45,C.pipe);
+}
+for(let i=0;i<5;i++){
+ let x=251+(i-2)*17,z=-33;
+ world.box(x,0,z,13,12,12,C.rust2,1);
+ world.cyl(x,12,z,4.9,4.9,4.4,C.steel,0,12);
+ world.line(x,5,z,x,4,z-18,.33,C.darkRust,1);
+}
+for(let i=0;i<7;i++){
+ let x=267+i*12,z=-276;
+ world.box(x,0,z,7,12,7,C.darkRust,1);
+ world.cyl(x,12,z,3.2,2.4,7,C.pale,5,12);
+ world.line(x,19,z,x,27,z,.13,C.steel);
+}
+locationSign(244,15,-77,24,8,3);
+locationSign(20,9,-96,20,7,1);
+locationSign(155,9,187,25,7,2);
+// 4. Hot-metal rail transfer from blast furnace to steelmaking, with ladle cars and servicing apron.
+world.box(-73,.09,-260,366,.24,19,C.ore,6);
+straightRail(-257,-261,124);
+straightRail(-257,-251,124);
+for(let i=0;i<5;i++){
+ let x=-81+i*27;
+ world.box(x,1,-261,14,2.0,4,C.darkRust,1);
+ world.cyl(x,3,-261,3.8,3.0,5.7,C.rust2,1,16);
+ world.cyl(x,8.7,-261,3.0,3.4,1.1,C.black,4,16);
+ for(let s of [-1,1])world.cyl(x+s*4,0.5,-262,.8,.8,.7,C.black,4,10);
+}
+world.box(-170,.12,-263,90,.28,11,C.concrete,2);
+for(let i=0;i<6;i++)world.box(-212+i*14,.26,-247,6,.32,3,C.yellow,9);
+// Oxygen supply, a gas collection main and service platform to BOS hall.
+vessel(-104,-329);
+for(let i=0;i<4;i++){let x=-58+i*13,z=-337;world.cyl(x,0,z,4.6,4.6,24,C.pale,5,16);world.cyl(x,24,z,4.6,3.5,4,C.steel,0,16);}
+overheadRack([[-58,-1,-319],[-113,-1,-319],[-156,-1,-277]],4,13);
+locationSign(-174,16,-142,30,9,4);
+// 5. Caster -> reheat -> mill: adjoining industrial halls with aligned transfer tunnel.
+detailedHall(-387,-190,88,170,39,1,C.rust2,'z+');
+detailedHall(-572,-199,215,150,42,1,C.darkRust,'z+');
+locationSign(-388,18,-104,31,9,5);
+locationSign(-574,18,-121,32,9,6);
+// Slab caster and output transfer line visible from yard, supported throughout its route.
+world.box(-441,0,-190,50,2,14,C.concrete,2);
+for(let x=-470;x<-411;x+=3.3){world.cyl(x,1.5,-190,1.3,1.3,3,C.steel,11,12);world.box(x,1.2,-190,2,.25,11,C.darkRust,1);}
+world.box(-452,5.3,-190,66,.6,15,C.rust2,1);
+for(let s of [-1,1]){world.line(-470,0,-190+s*8,-470,6,-190+s*8,.35,C.darkRust);world.line(-422,0,-190+s*8,-422,6,-190+s*8,.35,C.darkRust);}
+for(let x=-465;x<-430;x+=5.1)world.box(x,2.8,-190,4.2,.64,3.7,C.steel,11);
+// Hot strip mill outdoor roller table and cooling lines, at the correct end of the mill.
+for(let i=0;i<18;i++){
+ let x=-688-i*2.7;
+ world.box(x,1.35,-196,1,.45,8,C.steel,11);
+ if(i%3===0){world.line(x,1,-204,x,5,-204,.16,C.blue,8);world.line(x,5,-204,x,5,-188,.16,C.blue,8);}
+}
+// 6. Finished coil yard has realistic open loading bays and rail siding.
+world.box(-585,.08,25,222,.22,170,C.concrete,2);
+workRoad(-581,118,260,13,'x');
+for(let i=0;i<5;i++){
+ let xx=-669+i*43;
+ for(let j=0;j<3;j++){
+   let zz=-14+j*35;
+   world.box(xx,.22,zz,27,.28,21,C.darkRust,1);
+   for(let k=0;k<3;k++)steelCoil(xx+(k-1)*7,3.1,zz+(j%2)*1.0,2.5,2.4);
+ }
+}
+// Storage canopy and beam girders on columns, high enough for heavy transport equipment.
+for(let x=-702;x<=-465;x+=17){
+ for(let zz of [-34,90])world.line(x,0,zz,x,18,zz,.44,C.darkRust,1);
+ world.truss([x,19,-34],[x,19,90],2.7,2.3,14,C.steel);
+}
+world.box(-587,19.8,28,242,.5,128,C.blue,8);
+// rooflights and ridge vents, with long material repeats aligned by world position.
+for(let x=-687;x<-481;x+=30)for(let z=-25;z<84;z+=23)world.box(x,20.15,z,7,.12,15,C.pale,5);
+locationSign(-573,10,94,31,8,7);
+straightRail(-757,126,-380);
+straightRail(-757,133,-380);
+gantryBridge(-540,127,105,23);
+for(let [x,z] of [[-660,125],[-627,125],[-480,131]]){truck(x,z,C.cream);}
+// Seamless industrial roads: dedicated service loop, yard access, washdown and drainage.
+workRoad(-336,43,14,308,'z');
+workRoad(-565,169,414,15,'x');
+workRoad(-725,-62,13,486,'z');
+workRoad(-565,-348,335,16,'x');
+workRoad(-374,-319,14,64,'z');
+for(let z=-340;z<220;z+=35){grateDrain(-714,z,6);grateDrain(-344,z,5);}
+for(let x=-718;x<-412;x+=35)grateDrain(x,178,5,'x');
+// Functional substation: transformers, busbars, cable tray, gates and perimeter fence.
+world.box(-58,.13,-360,112,.4,78,C.concrete,2);
+for(let i=0;i<7;i++)powerTransformer(-103+i*15,-376);
+for(let i=0;i<9;i++){let xx=-111+i*14;
+ for(let z of [-340,-323]){world.line(xx,0,z,xx,15,z,.25,C.steel);world.cyl(xx,14,z,.45,.45,2.1,C.cream,5,8);}
+ world.line(xx,16,-340,xx,16,-323,.10,C.steel);
+}
+for(let [x,z,X,Z] of [[-119,-401,0,-401],[-119,-311,0,-311],[-119,-401,-119,-311],[0,-401,0,-311]])borderFence(x,z,X,Z,3.4);
+locationSign(-55,4,-310,20,7,10);
+// Cooling-water treatment and distribution. Clarifiers, header pipes, pump house.
+world.box(-435,.08,265,111,.25,121,C.concrete,2);
+for(let [x,z] of [[-462,247],[-413,247],[-462,298],[-413,298]]){
+ world.cyl(x,.1,z,15.8,15.8,3.1,C.concrete,2,24);
+ world.cyl(x,3.3,z,14.3,14.3,.2,C.blue,15,24);
+ world.line(x,3.8,z,x+13,3.8,z,.12,C.steel,0);
+ world.cyl(x,3.8,z,1.3,1.3,2,C.steel,11,12);
+ for(let s=0;s<12;s++){let a=s/12*TAU;world.line(x+Math.cos(a)*15,3.4,z+Math.sin(a)*15,x+Math.cos(a)*15,5.2,z+Math.sin(a)*15,.09,C.yellow,9);}
+}
+building(-400,326,42,22,11,C.sand,5);
+for(let i=0;i<6;i++)world.line(-418+i*7,9,326,-418+i*7,14,326,.2,C.pipe);
+pipePath([[-411,4,311],[-411,8,160],[-300,8,160],[-300,12,52]],.75,C.blue,8);
+locationSign(-394,4,340,23,7,9);
+// Maintenance workshop & operations: actual access doors, vehicle bay and parking.
+detailedHall(109,331,66,48,20,5,C.sand,'z+');
+world.box(107,.1,384,75,.18,38,C.black,3);
+for(let [x,z] of [[85,370],[104,370],[124,370]])car(x,z,C.cream);
+locationSign(106,9,356,25,7,15);
+building(43,395,44,29,12,C.blue,8);
+for(let x of [32,44,56]){world.box(x,3,410,.25,3,3,C.black,4);world.box(x,3,410.28,.12,2.8,2.9,C.blue,8);}
+locationSign(42,6,411,23,7,14);
+workRoad(1,379,14,139,'z');workRoad(43,428,95,14,'x');
+// Entrance gate + secure perimeter, rather than arbitrary barriers through roads.
+world.box(-13,.15,442,5,.35,17,C.concrete,2);
+world.box(14,.15,442,5,.35,17,C.concrete,2);
+world.line(-12,0,436,-12,8,436,.35,C.steel);world.line(13,0,436,13,8,436,.35,C.steel);
+world.line(-12,8,436,13,8,436,.32,C.steel);world.box(0,7.5,436,20,1.5,.7,C.rust2,1);
+locationSign(0,5.0,437,21,6,11);
+locationSign(-21,3,420,12,4,13);
+for(let x=-240;x<-22;x+=13)borderFence(x,450,Math.min(x+12,-20),450,3.4);
+for(let x=26;x<180;x+=13)borderFence(x,450,Math.min(x+12,180),450,3.4);
+// Yard traffic markers, bollards, service lights, fire-water hydrants.
+for(let [x,z] of [[-350,170],[-350,-100],[-726,-310],[-726,182],[-425,187],[17,420],[143,392]]){
+ lightMast(x,z,22);
+ for(let j=0;j<4;j++)world.cyl(x+4+j*1.7,0,z+4,.17,.17,1.3,C.yellow,9,8);
+}
+for(let [x,z] of [[-702,170],[-330,168],[-39,390],[294,287],[200,219]]){
+ world.cyl(x,0,z,.7,.7,1.1,C.rust2,1,9);
+ world.cyl(x,1.1,z,.25,.25,2,C.steel,0,9);
+ world.cyl(x,2.8,z,.75,.75,.35,C.yellow,9,10);
+}
+// Directional/operational signs mounted at the relevant actual landmarks.
+locationSign(-176,3,311,18,6,8);
+locationSign(-143,6,142,19,6,12);
+// Final parcel separator / berth safety lines (visible from water and yard).
+for(let z=-420;z<324;z+=3.4)world.box(360,.18,z,.3,.05,1.5,C.yellow,9);
+
+
+// Additional realistic support infrastructure and horizon-masking landforms.
+// Western escarpment and southern ridge help break the hard distance line.
+for(let i=0;i<72;i++){
+  let z=-560+i*18,x=-560-range(0,95),height=45+range(0,105);
+  world.cyl(x,-12,z,28,0,height,[.24,.28,.29],13,6);
+  if(i%3===0)world.cyl(x+range(-16,12),-10,z+range(-8,8),20,0,28+range(0,26),[.20,.24,.24],13,6);
+}
+for(let i=0;i<62;i++){
+  let x=-520+i*21,z=510+range(0,70),height=22+range(0,54);
+  world.cyl(x,-10,z,26,0,height,[.26,.29,.28],13,6);
+}
+for(let i=0;i<18;i++){
+  let x=250+i*26,z=-520-range(0,55),height=18+range(0,30);
+  world.cyl(x,-9,z,18,0,height,[.33,.34,.35],13,6);
+}
+// Industrial haze volumes / distant spoil mounds around the raw materials area.
+for(let i=0;i<8;i++){
+  let x=-285+i*26,z=260+range(-16,16);orePile(x,z,12+range(-2,4),7+range(0,5),i%3===0?C.ore:C.rust2,7);
+}
+
+// Water treatment / cooling plant: clarifiers, pump house and pipe bridges.
+workRoad(188,348,160,18,'x');
+world.box(190,.1,332,150,.2,58,C.concrete,2);
+for(let i=0;i<4;i++){
+  let x=132+i*32;world.cyl(x,.18,333,13.5,13.5,2.2,C.concrete,2,22);world.cyl(x,2.2,333,12.6,12.6,.55,C.blue,8,20);
+  world.cyl(x,2.75,333,.8,.8,2.7,C.steel,0,10);world.line(x-12,2.8,333,x+12,2.8,333,.12,C.steel);
+}
+openShed(255,335,56,34,13,5);
+world.box(255,.15,335,48,.15,22,C.concrete,2);
+for(let i=0;i<7;i++)world.box(232+i*7.2,1.3,335,4.5,2.0,14,C.steel,0);
+pipePath([[146,6,333],[176,6,333],[176,12,333],[226,12,333],[226,12,316]],.55,C.blue,8);
+pipePath([[176,6,333],[176,6,295],[130,6,295],[130,6,260]],.40,C.pipe,1);
+
+detailedHall(218,390,82,34,20,1,C.cream,'z+');
+openShed(120,392,70,28,11,6);
+for(let i=0;i<5;i++){let zz=382+i*6;world.box(97+i*8,.3,zz,5.2,.8,4.1,C.ore,7);} 
+world.box(118,.12,392,66,.12,23,C.concrete,2);
+overheadRack([[132,365],[188,365],[218,382]],5,12);
+
+// Electrical switchyard and energy services.
+world.box(315,.12,376,118,.18,66,C.concrete,2);
+for(let x=272;x<356;x+=18)powerTransformer(x,372+(x%36===0?0:10));
+for(let x=268;x<362;x+=12){world.line(x,0,346,x,16,346,.16,C.steel);world.line(x,16,346,x,16,406,.14,C.steel);} 
+for(let z=350;z<=402;z+=13)world.line(268,16,z,360,16,z,.12,C.steel);
+for(let x=272;x<356;x+=22){world.line(x,16,346,x+9,25,332,.1,C.yellow,9);world.line(x,16,406,x+8,23,420,.1,C.yellow,9);} 
+workRoad(314,420,122,14,'x');
+
+// Maintenance precinct: fabrication shop, machine shop, open repair bays and stores.
+detailedHall(-210,378,118,46,24,1,C.rust2,'z+');
+loadingDoors(-210,378,118,46,5,'z+');
+openShed(-78,375,86,42,14,6);
+world.box(-78,.12,375,80,.12,34,C.concrete,2);
+for(let i=0;i<4;i++){let x=-104+i*17;world.box(x,1.3,376,9,2.4,15,C.darkRust,1);world.box(x,4.0,376,8,1.2,13,C.yellow,9);} 
+industrialHall(-338,386,74,34,19,C.blue,7);
+openShed(-326,338,54,28,10,4);
+pipePath([[-244,8,361],[-210,8,361],[-210,12,335],[-156,12,335],[-120,12,350]],.45,C.steel,0);
+workRoad(-208,430,250,15,'x');
+workRoad(-82,353,18,104,'z');
+
+// Raw-material workshop and sheltered conveyor transfer houses.
+openShed(-286,228,96,36,12,7);
+openShed(-210,247,72,26,11,5);
+world.box(-286,.12,228,92,.12,30,C.concrete,2);
+for(let i=0;i<7;i++)world.box(-324+i*12.3,1.4,230,6,2.1,14,C.ore,7);
+conveyor([-248,17,245],[-176,20,245],5,C.rust2);
+conveyor([-176,20,245],[-96,24,232],5,C.rust2);
+world.box(-164,0,245,16,18,14,C.darkRust,1);
+world.box(-95,0,232,15,14,15,C.darkRust,1);
+
+// Rolling/dispatch support on the eastern side.
+detailedHall(470,-24,132,42,26,1,C.cream,'x-');
+openShed(466,58,116,34,12,8);
+world.box(466,.1,58,110,.14,28,C.concrete,2);
+for(let i=0;i<8;i++)steelCoil(430+i*9,2.7,57,2.35,3.0);
+for(let i=0;i<7;i++)steelCoil(430+i*9,2.7,44,2.35,3.0);
+pipePath([[388,10,56],[418,10,56],[418,14,17],[470,14,17]],.42,C.blue,8);
+workRoad(458,104,150,15,'x');
+
+// Open truck loading canopies and logistics yards near berth/warehouse edges.
+openShed(365,110,72,30,10,5);
+openShed(290,163,64,24,9,4);
+for(let i=0;i<5;i++)truck(336+i*12,107,i%2?C.cream:C.blue);
+for(let i=0;i<4;i++)truck(268+i*12,160,i%2?C.rust2:C.cream);
+world.box(327,.12,134,132,.12,92,C.concrete,2);
+workRoad(327,143,136,15,'x');
+workRoad(394,168,15,72,'z');
+
+// Laboratories / admin / crib rooms near the main gate so it feels staffed and usable.
+building(24,434,42,20,11,C.pale,5,C.roof);building(54,434,18,20,9,C.blue,8,C.roof);
+for(let i=0;i<5;i++){world.box(8+i*8,5,444,5,4,1.2,C.black,4);world.box(8+i*8,5,424,5,4,1.2,C.black,4);} 
+world.box(24,.12,434,68,.12,28,C.concrete,2);
+for(let i=0;i<6;i++)world.box(-5+i*10,.35,438,1.2,1.4,1.2,C.yellow,9);
+
+// Extra pipe racks, stairs and gantries to make the plant feel denser and more connected.
+overheadRack([[-24,148],[36,148],[96,148],[140,182]],6,15);
+overheadRack([[90,-146],[170,-146],[236,-118],[296,-118]],5,17);
+overheadRack([[228,12],[284,12],[338,34],[388,34]],4,14);
+gantryBridge(-18,214,84,18);
+gantryBridge(228,214,92,20);
+gantryBridge(112,-166,70,16);
+for(let p of [[-74,368],[-292,228],[470,58],[255,335]])staircase(p[0]-18,0,p[1]-10,10,12,2.1,true);
+
+// More distant stacks and sheds around the periphery to soften map edges.
+for(let i=0;i<5;i++)smokeStack(520+i*18,-210+i*10,2.7,48+range(0,20),i%2?C.darkRust:C.rust2);
+for(let i=0;i<6;i++)building(-500+i*32,-312+i*8,22,18,10+range(0,8),i%2?C.darkRust:C.blue,1,C.roof);
+for(let i=0;i<5;i++)building(520,-40+i*30,28,18,10+range(0,7),i%2?C.cream:C.rust2,1,C.roof);
+
+// ---- V4: physical plant detail, usable bays and grounded surrounding relief ----
+// A continuous stepped escarpment behind the site (not isolated conical mountains).
+function hillside(start,ending,baseZ,depth,heights,color){
+  const steps=40,levels=5;
+  for(let j=0;j<levels;j++)for(let i=0;i<steps;i++){
+    const x0=lerp(start,ending,i/steps),x1=lerp(start,ending,(i+1)/steps);
+    const z0=baseZ+(j/levels)*depth,z1=baseZ+((j+1)/levels)*depth;
+    const h=(x,z)=>-13+heights*(.53+.22*Math.sin(x*.012+1.8)+.14*Math.cos(x*.034-z*.004)+.11*Math.sin(x*.058+z*.016))*(.25+.75*Math.sin((j+1)/levels*PI*.5));
+    const a=[x0,h(x0,z0),z0],b=[x1,h(x1,z0),z0],c=[x1,h(x1,z1),z1],d=[x0,h(x0,z1),z1];
+    const shade=.82+.10*Math.sin(i*2.1+j*.7);
+    world.quad(a,b,c,d,color.map(v=>v*shade),13);
+  }
+}
+hillside(-860,650,585,340,115,[.25,.30,.28]);
+hillside(-860,610,-580,-250,69,[.31,.33,.33]);
+// Dense, sheltered maintenance and fabrication space under the pre-existing open shed.
+// Vertical separation and walkable stairs are handled below by walkSurfaces.
+world.box(-78,.11,375,82,.20,39,C.concrete,2);
+// Heavy gear reducer, hydraulic cylinders, rollers and repair gantry.
+for(let i=0;i<5;i++){
+ let xx=-101+i*12;
+ world.box(xx,.38,367,8,2,5.8,C.darkRust,1);
+ world.cyl(xx,2.55,367,2.1,2.1,2.4,C.blue,8,14);
+ world.box(xx,5,367,3.1,.4,3,C.steel,0);
+ world.line(xx-2.4,2.9,367,xx+2.4,2.9,367,.37,C.steel,0,6);
+}
+for(let i=0;i<6;i++){
+ let xx=-106+i*12;
+ world.box(xx,.35,381,8,1.5,5.2,C.rust2,1);
+ world.cyl(xx-2,1.9,381,1.35,1.35,1.2,C.steel,0,12);
+ world.cyl(xx+2,1.9,381,1.35,1.35,1.2,C.steel,0,12);
+}
+for(let i=0;i<5;i++)obstacle(-101+i*12,367,8.2,6.0);
+for(let i=0;i<6;i++)obstacle(-106+i*12,381,8.2,5.4);
+world.box(-78,6.2,390,80,.48,6,C.steel,0);
+world.rail(-118,6.7,393,-38,393,2.5);world.rail(-118,6.7,387,-38,387,2.5);
+for(let xx=-118;xx<-34;xx+=11)world.box(xx,6.0,390,.33,1.2,6.0,C.darkRust,1);
+// Structural access from the south-west corner, stairs are paired with collision surfaces.
+staircase(-115,0,357,6.68,29,2.2,true);
+world.box(-115,6.68,388,4.3,.4,8,C.steel,0);
+// Floor/edge visual safety paint.
+for(let i=0;i<14;i++)world.box(-114+i*5.7,.28,354,2.0,.035,.28,C.yellow,9);
+// A raised inspection room with an open bay and visible equipment.
+world.box(-68,7,387,16,7,.8,C.blue,8);
+world.box(-60,7,387,1.3,7,13,C.blue,8);
+world.box(-68,13.8,389,17,.8,14,C.roof,0);
+for(let k=0;k<3;k++)world.box(-73+k*5,10.0,387+.45,3.1,2.3,.16,C.black,4);
+// Parallel open dispatch canopy with staged coil bundles and a service hook.
+for(let k=0;k<7;k++)steelCoil(438+k*9,2.7,73,2.0,2.4);
+for(let k=0;k<5;k++)world.box(430+k*12,.38,90,8,2.3,4,C.ore,7);
+// Switchyard service details and pump maintenance aisle.
+for(let i=0;i<6;i++){
+ const zz=347+i*9;
+ world.cyl(278,1,zz,.55,.55,4.5,C.pale,5,8);
+ world.box(278,5.7,zz,2.6,.35,2.6,C.steel,0);
+ world.line(278,6,zz,296,6,zz,.13,C.yellow,9,4);
+}
+// Heavy open shop in the raw-materials precinct with forklift access.
+for(let k=0;k<6;k++){
+ let x=-327+k*16;
+ world.box(x,.38,216,7,1.3,6,C.darkRust,1);
+ world.box(x,1.8,216,5,1.4,4,C.blue,8);
+ world.cyl(x,3.2,216,1.55,1.55,.6,C.steel,0,10);
+}
+// Process-support connections, overhead electrical and gas services.
+overheadRack([[-118,400],[-28,400],[8,400]],3,11);
+overheadRack([[410,95],[466,95],[528,95]],3,14);
+// No closed collision hulls around these bays: they are meant to be explored.
+
+
+// Small map-wide detail accents: slab scoring, utility covers and extra trim near focal areas.
+for(let p of [[24,434,72,32],[255,335,54,26],[365,110,88,34],[-78,375,82,36],[218,390,90,40],[-210,378,124,52]])scoredPad(p[0],p[1],p[2],p[3],8,C.darkRust);
+for(let p of [[24,434],[118,392],[327,143],[-210,430],[314,420],[0,436],[255,335],[-78,375],[218,390]]){world.cyl(p[0],.23,p[1],.85,.85,.08,C.black,4,12);world.cyl(p[0],.31,p[1],.65,.65,.03,C.steel,0,12);}
+
+const staticChunks=world.finishChunked(180);
+const staticVertexCount=staticChunks.reduce((n,ch)=>n+ch.count,0);
+console.log('Port Kembla geometry:',staticVertexCount,'vertices in',staticChunks.length,'spatial chunks');
+// Moving diesel locomotive and two ore wagons on a road-level siding.
+const locoBuilder=new Builder();locoBuilder.box(0,.84,0,12,2.1,4.1,C.darkRust,1);locoBuilder.box(2.1,3,0,5.6,3.4,3.6,C.yellow,9);locoBuilder.box(-3.6,3,0,5,2.8,3.9,C.rust2,1);locoBuilder.box(3.2,5.7,0,2.4,1.0,3.3,C.blue,8);
+for(let i of [-3.6,2.2])for(let z of [-1.8,1.8])locoBuilder.cyl(i,.25,z,1.05,1.05,.65,C.black,4,12);
+for(let wagon=0;wagon<3;wagon++){let bx=-20-wagon*20;
+ locoBuilder.box(bx,1,0,15,2.3,4.3,C.darkRust,1);locoBuilder.box(bx,3,0,14,3.2,4,C.ore,7);
+ for(let xx of [bx-4.5,bx+4.5])for(let zz of [-1.65,1.65])locoBuilder.cyl(xx,.2,zz,.9,.9,.6,C.black,4,10);
+}const loco= locoBuilder.finish();
+// Scene-specific animated freight handling. Dynamic meshes have independent motion.
+const trolleyBuilder=new Builder();
+trolleyBuilder.box(0,0,0,9,2.2,6.2,C.yellow,9);
+for(let side of [-1,1]){
+ trolleyBuilder.box(side*3.5,-1.1,0,.8,1.8,5.8,C.darkRust,1);
+ for(let z of [-2,2])trolleyBuilder.cyl(side*3.5,-1.35,z,.65,.65,1,C.black,4,8);
+}
+trolleyBuilder.box(0,-7.8,0,3,.8,3.5,C.darkRust,1);
+for(let side of [-1,1])trolleyBuilder.line(side*1.3,-1.1,0,side*.7,-7.8,0,.10,C.steel,0,4);
+const movingTrolley=trolleyBuilder.finish();
+const loaderBuilder=new Builder();
+loaderBuilder.box(0,.42,0,7,1.3,3.0,C.rust2,1);
+loaderBuilder.box(-1.4,1.72,0,3.2,2.3,2.8,C.yellow,9);
+loaderBuilder.box(1.5,1.8,0,3.4,1.8,2.5,C.ore,7);
+for(const xx of [-2.4,2.2])for(const zz of [-1.45,1.45])loaderBuilder.cyl(xx,.18,zz,.75,.75,.48,C.black,4,8);
+const movingLoader=loaderBuilder.finish();
+const oreBuilder=new Builder();oreBuilder.box(0,0,0,3.2,1.25,3.6,C.ore,7);
+const movingOre=oreBuilder.finish();
+let handlingOn=true,ventOn=false;
+// PPE-clad workers along the vehicle routes and perimeter walkways.
+const workerBuilder=new Builder();
+workerBuilder.box(0,1.0,0,.63,.93,.46,C.yellow,9);
+workerBuilder.box(0,1.94,0,.59,.18,.48,C.blue,8);
+workerBuilder.cyl(0,2.17,0,.25,.27,.35,C.sand,5,9);
+workerBuilder.cyl(0,2.53,0,.32,.23,.19,C.yellow,9,10);
+for(const x of [-.22,.22])workerBuilder.box(x,.14,0,.22,.89,.24,C.blue,8);
+for(const x of [-.43,.43])workerBuilder.box(x,1.04,0,.20,.80,.21,C.yellow,9);
+workerBuilder.box(0,1.65,.24,.65,.17,.035,C.pale,11);
+const workerMesh=workerBuilder.finish();
+const workerPaths=[
+ {a:[-130,0,346],b:[-38,0,346],speed:.11,phase:0},
+ {a:[-21,0,472],b:[26,0,472],speed:.13,phase:1.7},
+ {a:[424,0,119],b:[500,0,119],speed:.09,phase:3.5},
+ {a:[260,0,313],b:[340,0,313],speed:.08,phase:2.1},
+ {a:[-350,0,430],b:[-238,0,430],speed:.075,phase:5.2}
+];
+// Smoke particles, sparks and lamp bloom as camera-facing quads.
+let smoke=[];const emitter=(x,y,z,amount=18,style=0)=>{for(let i=0;i<amount;i++)smoke.push({x,y,z,phase:rand(),age:rand(),vx:range(-.28,.33),vz:range(-.28,.28),s:range(4,9),style});};
+emitter(-9,115,-175,30,0);emitter(52-61,115,-175,22,0);emitter(-272,138,-303,25,0);emitter(-300,117,-303,20,0);emitter(100,77,220,26,1);emitter(180,77,220,24,1);emitter(285,85,-240,23,1);emitter(104,27,-197,13,2);
+let lamps=[];for(let z=-330;z<290;z+=52){lamps.push([-16.5,27,z],[22.5,24,z+7]);}for(let x=-270;x<320;x+=70)lamps.push([x,25,46]);for(let i=0;i<25;i++)lamps.push([range(-330,340),range(9,27),range(-345,310)]);
+const particles=gl.createBuffer(),pvao=gl.createVertexArray();gl.bindVertexArray(pvao);gl.bindBuffer(gl.ARRAY_BUFFER,particles);gl.bufferData(gl.ARRAY_BUFFER,90000*9*4,gl.DYNAMIC_DRAW);gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,3,gl.FLOAT,false,9*4,0);gl.enableVertexAttribArray(1);gl.vertexAttribPointer(1,2,gl.FLOAT,false,9*4,3*4);gl.enableVertexAttribArray(2);gl.vertexAttribPointer(2,4,gl.FLOAT,false,9*4,5*4);
+const rain=gl.createBuffer(),rvao=gl.createVertexArray();gl.bindVertexArray(rvao);gl.bindBuffer(gl.ARRAY_BUFFER,rain);gl.bufferData(gl.ARRAY_BUFFER,4000*3*4,gl.DYNAMIC_DRAW);gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,3,gl.FLOAT,false,3*4,0);
+// An unobtrusive piece of interactive machinery near the main furnace.
+let tapDuration=0,trainOn=true,cloudPurge=false;
+const locations=[
+ {name:'BLAST FURNACE 5',p:[3,2.3,38],look:[52,37,-142]},
+ {name:'IRONMAKING • CATWALK',p:[53,35,-100],look:[63,53,-147]},
+ {name:'SINTER PLANT',p:[196,2.3,-10],look:[269,23,-140]},
+ {name:'COKE OVENS',p:[123,2.3,238],look:[175,14,165]},
+ {name:'STEELMAKING • BOS',p:[-171,2.3,-94],look:[-192,18,-193]},
+ {name:'HARBOUR',p:[361,3.2,-45],look:[430,17,-190]},
+ {name:'SLAB CASTER',p:[-376,2.2,-63],look:[-389,19,-186]},
+ {name:'HOT STRIP MILL',p:[-566,2.2,-104],look:[-579,26,-197]},
+ {name:'COIL STORAGE',p:[-589,2.2,156],look:[-566,12,19]},
+ {name:'MAIN WORKS GATE',p:[-18,2.2,487],look:[2,7,437]},
+ {name:'OPEN MAINTENANCE WORKSHOP',p:[-77,2.2,351],look:[-77,6,380]},
+ {name:'COIL LOADING CANOPY',p:[464,2.2,102],look:[465,6,60]},
+ {name:'COOLING & WATER TREATMENT',p:[190,2.2,314],look:[194,12,349]},
+ {name:'FABRICATION & MACHINING',p:[-208,2.2,427],look:[-208,10,380]}
+];
+// ----------------------------------------------------------
+// Camera, controls, weather and interaction.
+// ----------------------------------------------------------
+let cam=[...locations[0].p],yaw=0,pitch=0,velocity=0,grounded=true,flight=false,crouch=false,weather=0,torch=false,t=0;
+let jumping=false, prev=performance.now(), lightning=0, flashNext=14, hintTimer=4.0, showHelp=false;
+let activeLocation=0;
+const placeName=document.getElementById('location'),status=document.getElementById('weather'),notification=document.getElementById('notification'),help=document.getElementById('help'),tip=document.getElementById('tip'),reticle=document.getElementById('reticle');
+function lookAtPoint(p){let d=sub(p,cam);yaw=Math.atan2(d[0],-d[2]);pitch=Math.atan2(d[1],Math.hypot(d[0],d[2]));}
+lookAtPoint(locations[0].look);
+let showMap=false;
+const diagramOverlay=document.getElementById('siteDiagram'),diagram=document.getElementById('diagram'),dctx=diagram.getContext('2d');
+function toggleMap(){showMap=!showMap;diagramOverlay.hidden=!showMap;}
+function drawDiagram(){if(!showMap)return;
+ let c=dctx,W=335,H=288;
+ c.clearRect(0,0,W,H);c.fillStyle='#0b161e';c.fillRect(0,0,W,H);
+ let scale=0.225,origin=[172,150],p=([x,z])=>[origin[0]+x*scale,origin[1]+z*scale];
+ c.strokeStyle='#3b555b';c.lineWidth=1;
+ for(let x=-780;x<590;x+=100){let a=p([x,-480]),b=p([x,500]);c.beginPath();c.moveTo(...a);c.lineTo(...b);c.stroke();}
+ for(let z=-480;z<500;z+=100){let a=p([-800,z]),b=p([560,z]);c.beginPath();c.moveTo(...a);c.lineTo(...b);c.stroke();}
+ c.fillStyle='#15455c';c.fillRect(...p([371,-436]),46,170);
+ let nodes=[[-255,174,'ORE'],[182,169,'COKE'],[254,-130,'SINTER'],[55,-150,'BF5'],[-193,-194,'BOS'],[-383,-194,'CAST'],[-570,-194,'MILL'],[-568,42,'COILS'],[-18,445,'GATE']];
+ let branches=[[[ -255,174],[254,-130],[55,-150]],[[-255,174],[182,169],[55,-150]],[[55,-150],[-193,-194],[-383,-194],[-570,-194],[-568,42]]];
+ branches.forEach((route,j)=>{c.strokeStyle=j===2?'#ec9e52':'#80a4a7';c.lineWidth=j===2?2.6:1.8;c.beginPath();route.forEach((n,i)=>{let v=p(n);i?c.lineTo(...v):c.moveTo(...v);});c.stroke();});
+ c.textAlign='center';nodes.forEach(([x,z,label])=>{let a=p([x,z]);c.fillStyle='#27353a';c.fillRect(a[0]-19,a[1]-7,38,16);c.strokeStyle='#b6a085';c.strokeRect(a[0]-19,a[1]-7,38,16);c.font='bold 8px monospace';c.fillStyle='#e5d6c3';c.fillText(label,a[0],a[1]+4);});
+ let here=p([cam[0],cam[2]]);c.fillStyle='#ffcc6c';c.beginPath();c.arc(...here,4.5,0,TAU);c.fill();c.strokeStyle='#ffcc6c';c.beginPath();c.moveTo(...here);c.lineTo(here[0]+Math.sin(yaw)*17,here[1]-Math.cos(yaw)*17);c.stroke();
+ c.fillStyle='#aebdc1';c.font='9px monospace';c.textAlign='left';c.fillText('N ↑     APPROXIMATE SCHEMATIC',7,12);
+}
+const keys=new Set();const touch={left:0,right:0,forward:0,back:0,jump:0,sprint:0,lookLast:null,stick:null};
+function notice(s,dur=2.9){notification.textContent=s;notification.style.opacity='1';clearTimeout(notice.timeout);notice.timeout=setTimeout(()=>notification.style.opacity='0',dur*1000);}
+function locationTo(i){i=clamp(i,0,locations.length-1);activeLocation=i;cam=[...locations[i].p];lookAtPoint(locations[i].look);flight=i===1;velocity=0;grounded=!flight;placeName.textContent=locations[i].name;notice(locations[i].name,1.7);}
+function weatherChange(){weather=(weather+1)%4;status.textContent=['GOLDEN STORM','THUNDERSTORM','CLEARING','INDUSTRIAL NIGHT'][weather];notice('ATMOSPHERE  /  '+status.textContent,2.6);}
+function keydown(e){if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();if(['INPUT','TEXTAREA'].includes(document.activeElement.tagName))return;
+ keys.add(e.code);
+ if(e.repeat)return;
+ if(e.code==='KeyT')weatherChange();
+ if(e.code==='KeyF'){torch=!torch;notice(torch?'WORKLIGHT ON':'WORKLIGHT OFF');}
+ if(e.code==='KeyV'){flight=!flight;velocity=0;notice(flight?'FREE-FLIGHT ENABLED':'GROUND MOVEMENT ENABLED');}
+ if(e.code==='KeyH'||e.code==='Slash'){showHelp=!showHelp;help.hidden=!showHelp;}
+ if(e.code==='KeyE')interact();
+ for(let i=1;i<=9;i++)if(e.code==='Digit'+i){locationTo(i-1);}if(e.code==='Digit0')locationTo(9);if(e.code==='KeyM')toggleMap();if(e.code==='KeyN')locationTo((activeLocation+1)%locations.length);if(e.code==='KeyB')locationTo((activeLocation+locations.length-1)%locations.length);if(e.code==='KeyP')changeQuality();if(e.code==='KeyG')toggleAmbience();
+}
+function interact(){const d0=Math.hypot(cam[0]-9,cam[2]+85),d1=Math.hypot(cam[0]+163,cam[2]+130),d2=Math.hypot(cam[0]-4,cam[2]-83);
+ if(d0<50){cloudPurge=!cloudPurge;notice(cloudPurge?'STEAM RELEASE // ACTIVE':'STEAM RELEASE // STOPPED');}
+ else if(d1<42){tapDuration=9;notice('BASIC OXYGEN FURNACE // STEEL POUR');}
+ else if(d2<70){trainOn=!trainOn;notice(trainOn?'RAIL OPERATIONS RESUMED':'RAIL OPERATIONS PAUSED');}
+ else if(Math.hypot(cam[0]+78,cam[2]-375)<42){handlingOn=!handlingOn;notice(handlingOn?'MAINTENANCE GANTRY / RUNNING':'MAINTENANCE GANTRY / PAUSED');}
+ else if(Math.hypot(cam[0]-466,cam[2]-58)<48){ventOn=!ventOn;notice(ventOn?'COIL YARD / EXTRACTION ON':'COIL YARD / EXTRACTION OFF');}
+ else notice('Move towards a control station or workshop to interact.');}
+document.addEventListener('keydown',keydown);document.addEventListener('keyup',e=>keys.delete(e.code));
+window.addEventListener('blur',()=>{keys.clear();touch.left=touch.right=touch.forward=touch.back=touch.jump=touch.sprint=0;});
+canvas.addEventListener('click',()=>{if(!matchMedia('(pointer:coarse)').matches&&!document.pointerLockElement)canvas.requestPointerLock?.();});
+document.addEventListener('mousemove',e=>{if(document.pointerLockElement===canvas){yaw+=e.movementX*.00165;pitch=clamp(pitch-e.movementY*.00165,-1.43,1.43);}});
+canvas.addEventListener('contextmenu',e=>e.preventDefault());
+const mobile=matchMedia('(pointer:coarse)').matches;
+const mControls=document.getElementById('touch');mControls.hidden=!mobile;
+let touchIdL=null,touchIdR=null,startX=0,startY=0,viewLastX=0,viewLastY=0;
+canvas.addEventListener('touchstart',e=>{for(const p of e.changedTouches){if(p.clientX<innerWidth*.41&&touchIdL==null){touchIdL=p.identifier;startX=p.clientX;startY=p.clientY;}else if(touchIdR==null){touchIdR=p.identifier;viewLastX=p.clientX;viewLastY=p.clientY;}}e.preventDefault();},{passive:false});
+canvas.addEventListener('touchmove',e=>{for(const p of e.changedTouches){if(p.identifier===touchIdL){const dx=p.clientX-startX,dy=p.clientY-startY;touch.left=clamp(-dx/48,0,1);touch.right=clamp(dx/48,0,1);touch.forward=clamp(-dy/48,0,1);touch.back=clamp(dy/48,0,1);document.getElementById('stick').style.transform=`translate(${clamp(dx,-38,38)}px,${clamp(dy,-38,38)}px)`;}else if(p.identifier===touchIdR){yaw+=(p.clientX-viewLastX)*.0052;pitch=clamp(pitch-(p.clientY-viewLastY)*.0052,-1.43,1.43);viewLastX=p.clientX;viewLastY=p.clientY;}}e.preventDefault();},{passive:false});
+canvas.addEventListener('touchend',e=>{for(const p of e.changedTouches){if(p.identifier===touchIdL){touchIdL=null;touch.left=touch.right=touch.forward=touch.back=0;document.getElementById('stick').style.transform='';}else if(p.identifier===touchIdR)touchIdR=null;}},{passive:false});
+for(let [id,fn] of [['jump',()=>{touch.jump=1;setTimeout(()=>touch.jump=0,140)}],['run',()=>{touch.sprint=touch.sprint?0:1;document.getElementById('run').classList.toggle('selected',!!touch.sprint)}],['mode',weatherChange],['fly',()=>{flight=!flight;notice(flight?'FREE-FLIGHT':'WALKING')}],['teleport',()=>locationTo((activeLocation+1)%locations.length)],['use',interact]])document.getElementById(id)?.addEventListener('click',e=>{e.stopPropagation();fn();});
+const shadowTex=gl.createTexture(),shadowFBO=gl.createFramebuffer();gl.bindTexture(gl.TEXTURE_2D,shadowTex);gl.texImage2D(gl.TEXTURE_2D,0,gl.DEPTH_COMPONENT24,1536,1536,0,gl.DEPTH_COMPONENT,gl.UNSIGNED_INT,null);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.NEAREST);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.NEAREST);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);gl.bindFramebuffer(gl.FRAMEBUFFER,shadowFBO);gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.DEPTH_ATTACHMENT,gl.TEXTURE_2D,shadowTex,0);gl.drawBuffers([gl.NONE]);gl.readBuffer(gl.NONE);const shadowOK=gl.checkFramebufferStatus(gl.FRAMEBUFFER)===gl.FRAMEBUFFER_COMPLETE;gl.bindFramebuffer(gl.FRAMEBUFFER,null);
+const sunDir=norm([-0.60,.22,-.61]),sunLook=[15,0,-70],sunEye=plus(sunLook,mul(sunDir,520));const lightMatrix=mat4mul(ortho(-820,820,-700,700,5,1500),lookAt(sunEye,sunLook,[0,1,0]));
+let shadowReady=false;
+function shadowPass(){if(!shadowOK)return;gl.bindFramebuffer(gl.FRAMEBUFFER,shadowFBO);gl.viewport(0,0,1536,1536);gl.clear(gl.DEPTH_BUFFER_BIT);gl.enable(gl.DEPTH_TEST);gl.useProgram(progs.depth);gl.uniformMatrix4fv(uniform(progs.depth,'uLightMatrix'),false,lightMatrix);for(const c of staticChunks){if(c.global||Math.hypot(c.cx-15,c.cz+70)<660+c.radius){gl.bindVertexArray(c.vao);gl.drawArrays(gl.TRIANGLES,0,c.count);}}gl.bindFramebuffer(gl.FRAMEBUFFER,null);shadowReady=true;}
+function drawStatic(viewProj,haze){const p=progs.world;gl.useProgram(p);gl.uniformMatrix4fv(uniform(p,'uVP'),false,viewProj);gl.uniform3fv(uniform(p,'uOffset'),[0,0,0]);gl.uniformMatrix4fv(uniform(p,'uLightMatrix'),false,lightMatrix);gl.uniform3fv(uniform(p,'uEye'),cam);gl.uniform3fv(uniform(p,'uSunDir'),sunDir);gl.uniform3fv(uniform(p,'uSkyHaze'),haze);gl.uniform3fv(uniform(p,'uTorchDir'),forward);gl.uniform1f(uniform(p,'uTime'),t);gl.uniform1f(uniform(p,'uMode'),weather);gl.uniform1f(uniform(p,'uLightning'),lightning);gl.uniform1f(uniform(p,'uTorch'),torch?1.:0.);gl.uniform1f(uniform(p,'uQuality'),qualityLevel);
+ gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,tex);gl.uniform1i(uniform(p,'uAtlas'),0);gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,shadowTex);gl.uniform1i(uniform(p,'uShadow'),1);gl.activeTexture(gl.TEXTURE2);gl.bindTexture(gl.TEXTURE_2D,signTex);gl.uniform1i(uniform(p,'uSigns'),2);
+ for(const c of staticChunks){if(chunkVisible(c)){gl.bindVertexArray(c.vao);gl.drawArrays(gl.TRIANGLES,0,c.count);}}
+ if(trainOn){gl.uniform3fv(uniform(p,'uOffset'),[-282+(trainDistance%585),0,80]);gl.bindVertexArray(loco.vao);gl.drawArrays(gl.TRIANGLES,0,loco.count);}
+ // Moving bridge crane trolley traverses a real open maintenance bay.
+ if(Math.hypot(cam[0]+78,cam[2]-375)<renderDistance[qualityLevel]+60){
+   const x=-78+(handlingOn?Math.sin(t*.38)*28:0);
+   gl.uniform3fv(uniform(p,'uOffset'),[x,12.1,375]);gl.bindVertexArray(movingTrolley.vao);gl.drawArrays(gl.TRIANGLES,0,movingTrolley.count);
+ }
+ // Slow maintenance transport shuttle on the east side of the dispatch corridor.
+ if(Math.hypot(cam[0]-465,cam[2]-58)<renderDistance[qualityLevel]+100){
+   const x=424+(handlingOn?(1+Math.sin(t*.19))*30:0);
+   gl.uniform3fv(uniform(p,'uOffset'),[x,0,112]);gl.bindVertexArray(movingLoader.vao);gl.drawArrays(gl.TRIANGLES,0,movingLoader.count);
+ }
+ // Ore flowing along the transfer-belt route; spaced, moving cargo loads.
+ if(handlingOn&&Math.hypot(cam[0]+195,cam[2]-245)<renderDistance[qualityLevel]+70){
+   gl.bindVertexArray(movingOre.vao);
+   for(let i=0;i<7;i++){
+     const x=-248+((t*2.5+i*11)%72);
+     gl.uniform3fv(uniform(p,'uOffset'),[x,19.8,245]);gl.drawArrays(gl.TRIANGLES,0,movingOre.count);
+   }
+ }
+ gl.bindVertexArray(workerMesh.vao);
+ for(const worker of workerPaths){
+   const cx=(worker.a[0]+worker.b[0])*.5,cz=(worker.a[2]+worker.b[2])*.5;
+   if(Math.hypot(cam[0]-cx,cam[2]-cz)>Math.min(renderDistance[qualityLevel],260))continue;
+   const f=(1+Math.sin(t*worker.speed+worker.phase))*.5;
+   const bx=lerp(worker.a[0],worker.b[0],f),bz=lerp(worker.a[2],worker.b[2],f);
+   gl.uniform3fv(uniform(p,'uOffset'),[bx,.02+Math.abs(Math.cos(t*worker.speed+worker.phase))*.035,bz]);
+   gl.drawArrays(gl.TRIANGLES,0,workerMesh.count);
+ }
+ gl.uniform3fv(uniform(p,'uOffset'),[0,0,0]);
+}
+const qualityLabels=['ECO','BALANCED','ULTRA'];
+let qualityLevel=1,qualityScale=[.68,.93,1.24],renderDistance=[430,670,1100];
+let showFPS=false,lastFpsTime=performance.now(),frames=0,fpsText='';
+const perf=document.getElementById('perf');
+function changeQuality(){qualityLevel=(qualityLevel+1)%3;lastW=0;lastH=0;
+ perf.textContent=qualityLabels[qualityLevel]+' / '+(fpsText||'FPS —');
+ notice('RENDERING  /  '+qualityLabels[qualityLevel]+'  ·  '+renderDistance[qualityLevel]+'M VIEW DISTANCE');
+}
+perf.textContent=qualityLabels[qualityLevel];
+let soundCtx=null,ambience=[],soundEnabled=false;
+function toggleAmbience(){
+ const AC=window.AudioContext||window.webkitAudioContext;
+ if(!AC){notice('WEB AUDIO UNAVAILABLE');return;}
+ if(!soundCtx){
+  soundCtx=new AC();
+  // Quiet generated ambience, no externally loaded audio or music.
+  const makeTone=(frequency,anchor,gainValue)=>{
+   const osc=soundCtx.createOscillator(),filter=soundCtx.createBiquadFilter();
+   const gain=soundCtx.createGain(),pan=soundCtx.createStereoPanner();
+   osc.type='sawtooth';osc.frequency.value=frequency;
+   filter.type='lowpass';filter.frequency.value=185;filter.Q.value=.25;
+   gain.gain.value=0;osc.connect(filter);filter.connect(gain);gain.connect(pan);pan.connect(soundCtx.destination);
+   osc.start();ambience.push({gain,pan,anchor,value:gainValue});
+  };
+  makeTone(52,[56,-170],.085);makeTone(83,[-80,375],.055);makeTone(67,[448,92],.048);
+  const noiseBuffer=soundCtx.createBuffer(1,soundCtx.sampleRate*2,soundCtx.sampleRate);
+  const channel=noiseBuffer.getChannelData(0);for(let i=0;i<channel.length;i++)channel[i]=(Math.random()*2-1)*.28;
+  const noise=soundCtx.createBufferSource(),filter=soundCtx.createBiquadFilter(),gain=soundCtx.createGain();
+  noise.buffer=noiseBuffer;noise.loop=true;filter.type='lowpass';filter.frequency.value=310;gain.gain.value=.009;
+  noise.connect(filter);filter.connect(gain);gain.connect(soundCtx.destination);noise.start();
+ }
+ soundEnabled=!soundEnabled;
+ if(soundEnabled)soundCtx.resume();else soundCtx.suspend();
+ notice(soundEnabled?'SPATIAL INDUSTRIAL AMBIENCE  /  ON':'SPATIAL INDUSTRIAL AMBIENCE  /  OFF');
+}
+function updateAmbience(){
+ if(!soundCtx||!soundEnabled)return;
+ for(const unit of ambience){
+  const dx=unit.anchor[0]-cam[0],dz=unit.anchor[1]-cam[2],distance=Math.hypot(dx,dz);
+  const side=(dx*right[0]+dz*right[2])/Math.max(1,distance);
+  unit.pan.pan.setTargetAtTime(clamp(side,-.9,.9),soundCtx.currentTime,.08);
+  unit.gain.gain.setTargetAtTime(unit.value/(1+distance/85),soundCtx.currentTime,.12);
+ }
+}
+function chunkVisible(c){
+ if(c.global)return true;
+ const dx=c.cx-cam[0],dz=c.cz-cam[2];
+ const distance=Math.hypot(dx,dz);
+ if(distance>renderDistance[qualityLevel]+c.radius)return false;
+ // Allow near/behind chunks that intersect camera, cull clearly off-screen chunks.
+ if(distance<c.radius+52)return true;
+ const front=dx*forward[0]+dz*forward[2];
+ if(front < -c.radius-50)return false;
+ const lateral=Math.abs(dx*right[0]+dz*right[2]);
+ return lateral<=Math.max(0,front)*1.4+c.radius+46;
+}
+
+let lastW=0,lastH=0;function resize(){let ratio=Math.min(devicePixelRatio||1,mobile?.95:qualityScale[qualityLevel],Math.sqrt((qualityLevel===2?4500000:qualityLevel===1?2600000:1500000)/Math.max(1,innerWidth*innerHeight))),W=Math.max(1,Math.floor(innerWidth*ratio)),H=Math.max(1,Math.floor(innerHeight*ratio));if(W!==lastW||H!==lastH){canvas.width=lastW=W;canvas.height=lastH=H;canvas.style.width=innerWidth+'px';canvas.style.height=innerHeight+'px';}gl.viewport(0,0,lastW,lastH);}
+let forward=[0,0,-1],right=[1,0,0],up=[0,1,0],trainDistance=0,headbob=0;
+const walkSurfaces=[{x0:-118,x1:-37,z0:387,z1:393,y:6.68},
+ {x0:-117.5,x1:-112.5,z0:384,z1:394,y:7.08}];
+// Stairs rise 6.68 m over 29 m and connect to the elevated maintenance catwalk.
+for(let i=0;i<19;i++){
+ const a=357+(i/19)*29,b=357+((i+1)/19)*29;
+ walkSurfaces.push({x0:-117,x1:-113,z0:a-.06,z1:b+.06,y:(i+1)/19*6.68+.13});
+}
+function surfaceY(x,z,feet,step=0.45){
+ let y=0;
+ for(const s of walkSurfaces){
+   if(x>=s.x0&&x<=s.x1&&z>=s.z0&&z<=s.z1 && s.y<=feet+step && s.y>y)y=s.y;
+ }
+ return y;
+}
+
+function collisions(nx,nz){
+ for(const b of colliders){if(nx>b[0]-.65&&nx<b[2]+.65&&nz>b[1]-.65&&nz<b[3]+.65 && cam[1]<5.8)return false;}
+ return true;
+}
+function move(dt){const a=(keys.has('KeyD')?1:0)-(keys.has('KeyA')?1:0)+touch.right-touch.left,b=(keys.has('KeyW')?1:0)-(keys.has('KeyS')?1:0)+touch.forward-touch.back;let speed=keys.has('ShiftLeft')||keys.has('ShiftRight')||touch.sprint?12.5:7.2;if(keys.has('ControlLeft')||keys.has('KeyC'))speed*=.48;if(flight)speed*=4;
+ const j=Math.hypot(a,b),dx=j?(right[0]*a+Math.sin(yaw)*b)/j*speed*dt:0,dz=j?(right[2]*a-Math.cos(yaw)*b)/j*speed*dt:0;
+ if(flight){cam[0]+=dx;cam[2]+=dz;if(keys.has('Space')||touch.jump)cam[1]+=speed*dt;if(keys.has('KeyC')||keys.has('ControlLeft'))cam[1]-=speed*dt;cam[1]=clamp(cam[1],2.0,255);}
+ else{
+  const height=keys.has('KeyC')||keys.has('ControlLeft')?1.2:2.0;
+  const initialFoot=cam[1]-height;
+  const beforeSurface=surfaceY(cam[0],cam[2],initialFoot,.55);
+  // Step assistance only when grounded; mid-air collision never pushes player uphill.
+  let nx=cam[0]+dx,nz=cam[2]+dz;
+  if(collisions(nx,cam[2])&&(!grounded||surfaceY(nx,cam[2],initialFoot,.43)<beforeSurface+.44))cam[0]=nx;
+  if(collisions(cam[0],nz)&&(!grounded||surfaceY(cam[0],nz,initialFoot,.43)<beforeSurface+.44))cam[2]=nz;
+  let floor=surfaceY(cam[0],cam[2],initialFoot,.50);
+  // Walking off an elevated platform causes a fall instead of snapping to ground.
+  if(grounded){
+    if(floor<initialFoot-.55){grounded=false;velocity=0;}
+    else{cam[1]=floor+height;velocity=0;}
+  }
+  if((keys.has('Space')||touch.jump)&&grounded){velocity=8.0;grounded=false;}
+  if(!grounded){
+    const wasY=cam[1];velocity-=23*dt;cam[1]+=velocity*dt;
+    let landing=surfaceY(cam[0],cam[2],cam[1]-height,.5);
+    // Descending onto catwalks, stair steps and ground, not teleporting upwards from underneath.
+    if(velocity<=0){
+      for(const surf of walkSurfaces)if(cam[0]>=surf.x0&&cam[0]<=surf.x1&&cam[2]>=surf.z0&&cam[2]<=surf.z1&&wasY-height>=surf.y-.08&&cam[1]-height<=surf.y)landing=Math.max(landing,surf.y);
+      if(cam[1]<height+landing){cam[1]=height+landing;velocity=0;grounded=true;}
+    }
+    if(cam[1]<height){cam[1]=height;velocity=0;grounded=true;}
+  }
+ }
+ if(j>0&&!flight&&grounded){headbob+=dt*(speed>9?13:9);}else headbob+=(0-headbob)*Math.min(1,dt*4);
+}
+function smokePass(vp){let out=[],camForward=forward,RR=norm(cross([0,1,0],camForward));let UU=norm(cross(camForward,RR));const emit=(pos,s,color,alpha)=>{
+ const a=plus(plus(pos,mul(RR,-s)),mul(UU,-s)),b=plus(plus(pos,mul(RR,s)),mul(UU,-s)),c=plus(plus(pos,mul(RR,s)),mul(UU,s)),d=plus(plus(pos,mul(RR,-s)),mul(UU,s));
+ let arr=[[a,0,0],[b,1,0],[c,1,1],[a,0,0],[c,1,1],[d,0,1]];for(let [p,u,v] of arr)out.push(...p,u,v,...color,alpha);
+ };
+ const ordered=smoke.map((s,i)=>({s,i,dist:(s.x-cam[0])**2+(s.z-cam[2])**2})).sort((a,b)=>b.dist-a.dist);
+ for(let {s,i} of ordered){let p=(t*(s.style===2?.16:.033)+s.phase)%1.0;let x=s.x+p*(s.style===2?-7:-33)+(s.vx*12*p),z=s.z+p*19+s.vz*12*p,y=s.y+p*(s.style===2?34:66),size=s.s*(.7+p*2.3);let col=s.style===0?[.42,.43,.45]:s.style===1?[.72,.72,.72]:[1,.38,.08];emit([x,y,z],size,col,(s.style===2?.27:.30)*Math.sin(p*PI));}
+ if(cloudPurge){for(let i=0;i<25;i++){let p=(t*.09+i/25)%1,ang=i*2.399;emit([9+Math.cos(ang)*p*19,18+p*46,-85+Math.sin(ang)*p*21],3+15*p,[.77,.80,.80],.26*(1-p));}}
+ // Warm halation from high mast floodlights, strongest after dark.
+ const brightness=weather===3?.55:weather===1?.29:.13;
+ for(let l of lamps)emit(l,weather===3?6:3.7,[1,.77,.44],brightness);
+ if(ventOn){for(let i=0;i<9;i++){
+   let p=(t*.12+i/9)%1;
+   emit([465+Math.sin(i*1.6)*3,13+p*28,58+p*5],3+10*p,[.70,.73,.72],.19*(1-p));
+ }}
+ if(tapDuration>0){for(let i=0;i<26;i++){let p=(t*.7+i/26)%1;emit([-181+Math.sin(i*12)*3,3+p*19,-140+Math.cos(i*5)*4],1.5+2*p,[1,.32,.05],.38*(1-p));}}
+ let f=new Float32Array(out);gl.bindBuffer(gl.ARRAY_BUFFER,particles);gl.bufferData(gl.ARRAY_BUFFER,f,gl.DYNAMIC_DRAW);gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.depthMask(false);
+ const prog=progs.part;gl.useProgram(prog);gl.uniformMatrix4fv(uniform(prog,'uVP'),false,vp);gl.bindVertexArray(pvao);gl.drawArrays(gl.TRIANGLES,0,f.length/9);gl.depthMask(true);gl.disable(gl.BLEND);
+}
+function rainPass(vp){if(weather!==1)return;let out=[];let wind=t*3.1;for(let i=0;i<920;i++){let a=Math.sin(i*47.167)*43758.5453,b=Math.sin(i*112.231)*75361.7443,c=Math.sin(i*83.111)*45311.2315;let fx=a-Math.floor(a),fy=b-Math.floor(b),fz=c-Math.floor(c);let x=cam[0]+(fx-.5)*70-(t*6.8)%70,y=cam[1]+(fy-.5)*33-(t*31)%33,z=cam[2]+(fz-.5)*70; x=cam[0]+((x-cam[0]+140)%70)-35;y=cam[1]+((y-cam[1]+66)%33)-16.5;out.push(x,y,z,x+0.3,y-1.35,z+.11);}
+let f=new Float32Array(out);gl.bindBuffer(gl.ARRAY_BUFFER,rain);gl.bufferData(gl.ARRAY_BUFFER,f,gl.DYNAMIC_DRAW);gl.useProgram(progs.rain);gl.uniformMatrix4fv(uniform(progs.rain,'uVP'),false,vp);gl.uniform1f(uniform(progs.rain,'uLightning'),lightning);gl.bindVertexArray(rvao);gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.drawArrays(gl.LINES,0,f.length/3);gl.disable(gl.BLEND);}
+const nearStations=[{p:[9,1,-85],txt:'E  ·  PURGE STEAM'},{p:[-163,1,-130],txt:'E  ·  TAP FURNACE'},{p:[4,1,83],txt:'E  ·  TRAIN CONTROL'},{p:[-78,1,375],txt:'E  ·  WORKSHOP GANTRY'},{p:[466,1,58],txt:'E  ·  VENTILATION'}];
+function showProximity(){let near=null,dist=Infinity;for(let s of nearStations){let d=Math.hypot(cam[0]-s.p[0],cam[2]-s.p[2]);if(d<45&&d<dist){near=s;dist=d;}}tip.textContent=near?near.txt:'CLICK TO LOOK AROUND  ·  N NEXT SITE  ·  P QUALITY  ·  M MAP';tip.style.opacity=near?'1':(document.pointerLockElement?'.0':'.56');}
+const fullscreenSky=gl.createVertexArray();
+function drawSky(){gl.bindVertexArray(fullscreenSky);gl.useProgram(progs.sky);let p=progs.sky;gl.uniform3fv(uniform(p,'uForward'),forward);gl.uniform3fv(uniform(p,'uRight'),right);gl.uniform3fv(uniform(p,'uUp'),up);gl.uniform3fv(uniform(p,'uSunDir'),sunDir);gl.uniform1f(uniform(p,'uAspect'),lastW/lastH);gl.uniform1f(uniform(p,'uTan'),Math.tan(PI*73/360));gl.uniform1f(uniform(p,'uMode'),weather);gl.uniform1f(uniform(p,'uTime'),t);gl.uniform1f(uniform(p,'uLightning'),lightning);gl.disable(gl.DEPTH_TEST);gl.drawArrays(gl.TRIANGLES,0,6);gl.enable(gl.DEPTH_TEST);}
+let renderError=false;function render(now){try{
+ const dt=Math.min(.05,Math.max(.002,(now-prev)/1000));prev=now;t+=dt;tapDuration=Math.max(0,tapDuration-dt);if(trainOn)trainDistance+=dt*8;
+ if(weather===1&&t>flashNext){lightning=1.;flashNext=t+range(7,19);}
+ lightning*=Math.pow(.09,dt*8);
+ if(weather!==1)lightning=0;
+ resize();
+ forward=[Math.sin(yaw)*Math.cos(pitch),Math.sin(pitch),-Math.cos(yaw)*Math.cos(pitch)];right=[Math.cos(yaw),0,Math.sin(yaw)];up=norm(cross(right,forward));
+ move(dt);updateAmbience();
+ let eye=[cam[0],cam[1]+(grounded&&!flight?Math.sin(headbob)*.031:0),cam[2]];
+ const view=lookAt(eye,plus(eye,forward),[0,1,0]),proj=perspective(PI*73/180,lastW/lastH,.08,1400),vp=mat4mul(proj,view);
+ gl.bindFramebuffer(gl.FRAMEBUFFER,null);gl.viewport(0,0,lastW,lastH);gl.clearColor(.1,.13,.15,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+ drawSky();gl.clear(gl.DEPTH_BUFFER_BIT);gl.enable(gl.DEPTH_TEST);
+ const haze=weather===1?[.18,.21,.27]:weather===3?[.08,.11,.15]:weather===2?[.40,.48,.56]:[.46,.44,.40];
+ drawStatic(vp,haze);
+ smokePass(vp);rainPass(vp);
+ if(((t*4)|0)!==((t-dt)*4|0)){showProximity();drawDiagram();}
+ frames++;
+ if(now-lastFpsTime>800){fpsText=Math.round(frames*1000/(now-lastFpsTime))+' FPS';frames=0;lastFpsTime=now;perf.textContent=qualityLabels[qualityLevel]+'  ·  '+fpsText;}
+ requestAnimationFrame(render);
+ if(!shadowReady && shadowOK && t>0.14){shadowPass();}
+ }catch(err){console.error(err);if(!renderError){renderError=true;document.getElementById('error').hidden=false;document.getElementById('error').textContent='Rendering error: '+err.message;}}}
+function start(){notice('PORT KEMBLA  /  INDUSTRIAL EXPLORATION  /  V4',3);requestAnimationFrame(render);}
+// Fix sky night flag: only the fourth atmosphere is nighttime.
+start();
+})();
+</script></body></html>
