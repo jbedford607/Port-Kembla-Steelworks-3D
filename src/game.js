@@ -195,8 +195,15 @@ function main(){
     }else{
       if(keys.has('Space')&&PLAYER.grounded){PLAYER.vy=8.4;PLAYER.grounded=false;}
       PLAYER.vy-=23*dt;PLAYER.y+=PLAYER.vy*dt;
-      const ground=crouch?1.15:2;
-      if(PLAYER.y<=ground){PLAYER.y=ground;PLAYER.vy=0;PLAYER.grounded=true;}
+      const eyeHeight=crouch?1.15:2;
+      const floor=world.floorHeight(PLAYER.x,PLAYER.z,PLAYER.y-eyeHeight);
+      const minimum=floor+eyeHeight;
+      // Grounded players step onto a slope; jumping players are not snapped down.
+      if(PLAYER.grounded && floor>PLAYER.y-eyeHeight && floor-(PLAYER.y-eyeHeight)<.85 && PLAYER.vy<=0){
+        PLAYER.y=minimum;PLAYER.vy=0;
+      }else if(PLAYER.y<=minimum){
+        PLAYER.y=minimum;PLAYER.vy=0;PLAYER.grounded=true;
+      }else if(PLAYER.vy<0){PLAYER.grounded=false;}
     }
     PLAYER.x=Math.max(-1500,Math.min(1300,PLAYER.x));
     PLAYER.z=Math.max(-1550,Math.min(1550,PLAYER.z));
