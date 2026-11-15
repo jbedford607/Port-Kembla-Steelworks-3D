@@ -54,7 +54,7 @@ class District {
 }
 
 export function createWorld(scene,m){
-  const zones=[],colliders=[],interactive=[],dynamic=[],smokeEmitters=[];
+  const zones=[],colliders=[],interactive=[],dynamic=[],smokeEmitters=[],raisedFloors=[],ramps=[];
   const addZone=(name,x,z,range=470)=>{const zne=new District(name,[x,z],range);zones.push(zne);return zne;};
   const block=(x,z,w,d,h=25)=>colliders.push({minX:x-w/2,maxX:x+w/2,minZ:z-d/2,maxZ:z+d/2,height:h});
   const addInteract=(x,z,r,label,fn)=>interactive.push({x,z,r,label,activate:fn});
@@ -242,6 +242,7 @@ export function createWorld(scene,m){
       D.cyl(x+dx,.83,z+dz,1,1,.7,m.dark,10);
   }
   function walkway(D,x,z,w,d,h=9){
+    raisedFloors.push({minX:x-w/2,maxX:x+w/2,minZ:z-d/2,maxZ:z+d/2,y:h+.18});
     D.box(x,h,z,w,.35,d,m.metal);
     for(let s of [-1,1]){
       const zz=z+s*d/2;
@@ -252,6 +253,7 @@ export function createWorld(scene,m){
     }
   }
   function stair(D,x,z,h=9,run=12,steps=20){
+    ramps.push({x,z,run,h,halfWidth:1.6});
     for(let i=0;i<steps;i++){
       const t=(i+.5)/steps;
       D.box(x+run*t,.12+h*t,z,run/steps+.09,.17,2.4,m.metal);
@@ -461,7 +463,7 @@ export function createWorld(scene,m){
     const w=wagon(i*16,i===0?m.yellow:m.rust);train.add(w);
   }
   scene.add(train);dynamic.push(t=>{
-    train.position.x=-550+(t*11)%1000;
+    if(state.heat)train.position.x=-550+(t*11)%1000;
   });
   const hoist=new THREE.Mesh(new THREE.BoxGeometry(11,5,8),m.yellow);
   hoist.castShadow=true;scene.add(hoist);
@@ -538,6 +540,20 @@ export function createWorld(scene,m){
 
   return {
     landmarks,colliders,interactive,zones,
+    floorHeight(x,z,footY=0){
+      let h=0;
+      for(const r of ramps){
+        const t=(x-r.x)/r.run;
+        if(t>=0&&t<=1&&Math.abs(z-r.z)<=r.halfWidth){
+          const y=t*r.h;
+          if(y<=footY+.85)h=Math.max(h,y);
+        }
+      }
+      for(const f of raisedFloors){
+        if(x>=f.minX&&x<=f.maxX&&z>=f.minZ&&z<=f.maxZ&&f.y<=footY+.85)h=Math.max(h,f.y);
+      }
+      return h;
+    },
     update(t,dt,camera,quality){
       for(const fn of dynamic)fn(t,dt);
       for(const zone of zones){
