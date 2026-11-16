@@ -29,7 +29,7 @@ jobs:
           Copy-Item -Path dist/* -Destination cmd/steelworks/static -Recurse -Force
       - name: Compile self-contained Windows executable
         shell: pwsh
-        run: go build -trimpath -ldflags="-s -w" -o Port_Kembla_Steelworks_ThreeJS.exe ./cmd/steelworks
+        run: go build -trimpath -ldflags="-s -w" -o Port_Kembla_Steelworks_ThreeJS.exe ./cmd/steelworks/main.go
       - name: Upload the EXE
         uses: actions/upload-artifact@v4
         with:
