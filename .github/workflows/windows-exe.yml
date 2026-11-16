@@ -1,0 +1,39 @@
+name: Build portable Windows EXE (Three.js)
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  package-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Validate JavaScript
+        run: npm run check
+      - name: Build browser assets
+        run: npm run build
+      - name: Prepare Go embed assets
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path cmd/steelworks/static | Out-Null
+          Copy-Item -Path dist/* -Destination cmd/steelworks/static -Recurse -Force
+      - name: Compile self-contained Windows executable
+        shell: pwsh
+        run: go build -trimpath -ldflags="-s -w" -o Port_Kembla_Steelworks_ThreeJS.exe ./cmd/steelworks
+      - name: Upload the EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: Port-Kembla-Steelworks-ThreeJS-Windows
+          path: Port_Kembla_Steelworks_ThreeJS.exe
+          if-no-files-found: error
+          retention-days: 30
