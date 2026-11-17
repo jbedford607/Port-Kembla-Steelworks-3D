@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { createMaterials } from './materials.js';
 import { createWorld } from './world.js';
 import { createFurnaceWatcher } from './horror.js';
+import { createNightEvents } from './night_fx.js';
 import './style.css';
 
 const canvas=document.getElementById('world');
@@ -101,12 +102,16 @@ function main(){
   scene.add(rays);
 
   const world=createWorld(scene,mats);
+  const nightFx=createNightEvents(scene,world,camera);
   const keys=new Set();
-  const PLAYER={x:world.landmarks[0].pos[0],y:2,z:world.landmarks[0].pos[2],vy:0,grounded:true,fly:false,height:2};
+  const PLAYER={x:world.landmarks[0].pos[0],y:2,z:world.landmarks[0].pos[2],vy:0,grounded:true,fly:false,height:2,stamina:100,sprinting:false};
   camera.position.set(PLAYER.x,PLAYER.y,PLAYER.z);
   camera.rotation.order='YXZ';
   let yaw=world.landmarks[0].yaw,pitch=-.06;
   let quality=1,weather=0;
+  const staminaBar=document.createElement('div');
+  staminaBar.id='steel-stamina';staminaBar.innerHTML='<span>STAMINA</span><i></i>';
+  document.body.append(staminaBar);
   const horror=createFurnaceWatcher(scene,world,camera,{
     onScare(){show('SIGNAL LOST / THE WATCHER FOUND YOU',1.25);},
     onChase(){show('HOSTILE ENTITY / RUN',2.1);},
@@ -154,6 +159,7 @@ function main(){
       sun.color.set('#526b8d');sun.intensity=.16;ambient.intensity=.46;
       rays.visible=false;
     }
+    nightFx.setNight(weather===3);
     horror.setNight(weather===3,PLAYER);
     show(stormNames[weather],2.4);
   }
@@ -178,7 +184,8 @@ function main(){
   }
   function teleport(index){
     const l=world.landmarks[index];if(!l)return;
-    PLAYER.x=l.pos[0];PLAYER.y=l.pos[1];PLAYER.z=l.pos[2];PLAYER.vy=0;
+    nightFx.exitHiding();
+    PLAYER.x=l.pos[0];PLAYER.y=l.pos[1];PLAYER.z=l.pos[2];PLAYER.vy=0;PLAYER.stamina=100;
     yaw=l.yaw;pitch=-.04;
     horror.onPlayerTeleport(PLAYER);
     show('SECTOR / '+l.name,2.5);
@@ -187,8 +194,18 @@ function main(){
     const lateral=Number(keys.has('KeyD'))-Number(keys.has('KeyA'));
     const fore=Number(keys.has('KeyW'))-Number(keys.has('KeyS'));
     const crouch=keys.has('KeyC')||keys.has('ControlLeft');
-    const sprint=keys.has('ShiftLeft')||keys.has('ShiftRight');
-    const speed=PLAYER.fly?28:crouch?2.8:sprint?11.5:6.8;
+    const sprint=(keys.has('ShiftLeft')||keys.has('ShiftRight'))&&!crouch&&!PLAYER.fly;
+    const running=sprint&&PLAYER.stamina>7&&(Math.abs(lateral)+Math.abs(fore)>0);
+    PLAYER.sprinting=running;
+    PLAYER.stamina=Math.min(100,Math.max(0,PLAYER.stamina+dt*(running?-13.5:14)));
+    const speed=PLAYER.fly?28:crouch?2.8:running?11.5:6.8;
+    if(nightFx.isHidden()){
+      PLAYER.sprinting=false;
+      PLAYER.stamina=Math.min(100,PLAYER.stamina+dt*17);
+      camera.position.set(PLAYER.x,PLAYER.y,PLAYER.z);
+      camera.rotation.set(pitch,yaw,0,'YXZ');
+      return;
+    }
     let dx=0,dz=0;
     const mag=Math.hypot(lateral,fore);
     if(mag>0){
@@ -248,9 +265,11 @@ function main(){
       info.textContent='X '+Math.round(PLAYER.x)+' / Z '+Math.round(PLAYER.z);
     }
     if(now>toastUntil)toast.style.opacity='0';
-    const target=world.interact(camera);
-    hint.textContent=target?'E  ·  '+target.label.replace(/^E\s*·\s*/,''):
-      (document.pointerLockElement===canvas?'WASD MOVE · SHIFT RUN · SPACE JUMP · H HELP':'CLICK TO LOOK · WASD MOVE · T WEATHER · Q QUALITY');
+    const target=world.interact(camera),hidingHint=nightFx.getPrompt(PLAYER);
+    staminaBar.classList.toggle('visible',weather===3&&PLAYER.stamina<99&&!nightFx.isHidden());
+    staminaBar.querySelector('i').style.width=Math.round(PLAYER.stamina)+'%';
+    hint.textContent=hidingHint|| (target?'E  ·  '+target.label.replace(/^E\s*·\s*/,''): 
+      (document.pointerLockElement===canvas?'WASD MOVE · SHIFT RUN · SPACE JUMP · H HELP':'CLICK TO LOOK · WASD MOVE · T WEATHER · Q QUALITY'));
   }
   canvas.addEventListener('click',()=>{
     horror.tryAudio();
@@ -273,10 +292,14 @@ function main(){
     if(e.code==='KeyT'){weather=(weather+1)%4;if(weather===3)horror.tryAudio();applyWeather();}
     if(e.code==='KeyQ'){quality=(quality+1)%3;applyQuality();}
     if(e.code==='KeyK'){show(horror.toggleMute()?'HORROR SOUND ON':'HORROR SOUND MUTED',2.2);}
+    if(e.code==='KeyF' && weather===3){show(nightFx.toggleFlashlight()?'FLASHLIGHT ON':'FLASHLIGHT OFF',1.2);}
     if(e.code==='KeyV'){PLAYER.fly=!PLAYER.fly;PLAYER.vy=0;show(PLAYER.fly?'FLIGHT ENABLED':'WALK MODE');}
     if(e.code==='KeyH'){help.hidden=!help.hidden;}
     if(e.code==='KeyM'){siteMap.hidden=!siteMap.hidden;}
-    if(e.code==='KeyE'){const message=world.activate(camera);if(message)show(message,3);}
+    if(e.code==='KeyE'){
+      const message=nightFx.interact(PLAYER)||world.activate(camera);
+      if(message)show(message,2.7);
+    }
     if(e.code.startsWith('Digit')){const i=Number(e.code.slice(5))-1;if(i>=0&&i<6)teleport(i);}
   });
   document.addEventListener('keyup',e=>keys.delete(e.code));
@@ -300,7 +323,14 @@ function main(){
       sky.position.copy(camera.position);
       skyMaterial.uniforms.uTime.value=time;
       world.update(time,dt,camera,quality);
-      horror.update(time,dt,PLAYER);
+      nightFx.update(time,dt,PLAYER,horror.getThreat());
+      const hunter=horror.getPosition();
+      horror.update(time,dt,PLAYER,{
+        hidden:nightFx.isHidden(),
+        crouching:keys.has('KeyC')||keys.has('ControlLeft'),
+        sprinting:PLAYER.sprinting,
+        flashlightHit:nightFx.flashlightHit(hunter.x,5.2,hunter.z)
+      });
       const fovTarget=75+(weather===3?Math.min(5,horror.getThreat()*5):0);
       if(Math.abs(camera.fov-fovTarget)>.04){camera.fov+=(fovTarget-camera.fov)*Math.min(1,dt*3);camera.updateProjectionMatrix();}
       updateRain(dt);
