@@ -237,6 +237,7 @@ export function createExpansion(scene,m,colliders,interactive,raisedFloors,ramps
     D.box(x,h+.4,z,13,.8,13,m.roof);
   }
   function drum(D,x,z,r=5,h=18,color=m.metal) {
+    block(x,z,r*1.7,r*1.7,h);
     D.cyl(x,h/2+.2,z,r,h,color,20);
     D.cyl(x,h+.3,z,r+.15,.7,m.roof,20);
     for(let y=3;y<h;y+=5)D.cyl(x,y,z,r+.13,.3,m.rust,20);
@@ -267,6 +268,7 @@ export function createExpansion(scene,m,colliders,interactive,raisedFloors,ramps
     }
   }
   function pile(D,x,z,rad,h,color){
+    block(x,z,rad*1.40,rad*1.40,h);
     D.cyl(x,h/2,z,rad,h,color,17,0);
     for(let i=0;i<5;i++){
       const a=i*2.399,rr=rad*.35;
@@ -349,9 +351,12 @@ export function createExpansion(scene,m,colliders,interactive,raisedFloors,ramps
       }
       train.add(wagon);
     }
+    let railT=0,railPrevious=0;
     dynamic.push(t=>{
-      train.position.set(-80+(state.shunt?(t*8)%410:0),0,716);
-      train.visible=state.shunt;
+      const dt=Math.min(.07,Math.max(0,t-railPrevious));railPrevious=t;
+      if(state.shunt)railT=(railT+dt*8)%410;
+      train.position.set(-80+railT,0,716);
+      train.visible=true;
     });
     landmark('FREIGHT & SHUNTING',25,574,-PI/2);
   }
@@ -397,7 +402,12 @@ export function createExpansion(scene,m,colliders,interactive,raisedFloors,ramps
     rope.position.y=14.5;magnet.add(rope);
     const scrap=new THREE.Mesh(new THREE.DodecahedronGeometry(3,0),m.rust);
     scrap.position.y=5.2;magnet.add(scrap);
-    dynamic.push(t=>{magnet.position.set(-355+(state.scrapCrane?Math.sin(t*.26)*62:0),0,750);});
+    let craneT=0,craneLast=0;
+    dynamic.push(t=>{
+      const dt=Math.min(.07,Math.max(0,t-craneLast));craneLast=t;
+      if(state.scrapCrane)craneT+=dt*.26;
+      magnet.position.set(-355+Math.sin(craneT)*62,0,750);
+    });
     landmark('SCRAP RECYCLING',-470,585,PI);
   }
 
@@ -428,6 +438,9 @@ export function createExpansion(scene,m,colliders,interactive,raisedFloors,ramps
     for(let [x,z] of [[-548,-211],[-545,-268]])drum(D,x,z,10,23,m.blue);
     for(let x of [-790,-740,-690,-640])industrialLamp(D,x,-30,23);
     openRack(D,-581,-17,-335,-17,5,13); // power / hot-gas corridor
+    const liveLight=new THREE.PointLight(0xffa15c,28,64,2);
+    liveLight.position.set(-746,15,-224);scene.add(liveLight);
+    dynamic.push(t=>{liveLight.intensity=state.power?22+Math.sin(t*3)*6:0;});
     control(D,-760,-279,'SUBSTATION BREAKER',()=>{
       state.power=!state.power;
       return state.power?'SUBSTATION LIVE / TRANSFORMERS ENERGISED':'SUBSTATION ISOLATED / TRANSFORMERS OFF';
@@ -461,6 +474,22 @@ export function createExpansion(scene,m,colliders,interactive,raisedFloors,ramps
     belt(D,-60,20,-621,11,26,-345,6); // process connection into existing coke works
     rollerRail(D,-435,310,-561);
     rollerRail(D,-435,310,-581);
+    // The suspended ore carriers actually move along the final feed belt.
+    const carriers=[];
+    for(let i=0;i<9;i++){
+      const o=new THREE.Mesh(new THREE.DodecahedronGeometry(1.8,0),m.ore);
+      o.castShadow=true;scene.add(o);carriers.push(o);
+    }
+    let beltT=0,beltPrevious=0;
+    dynamic.push(t=>{
+      const dt=Math.min(.07,Math.max(0,t-beltPrevious));beltPrevious=t;
+      if(state.slag)beltT+=dt*.07;
+      carriers.forEach((o,i)=>{
+        const q=(beltT+i/9)%1;
+        o.position.set(between(-60,11,q),between(20,26,q)+.5,between(-621,-345,q));
+        o.rotation.set(q*1.7,q*2.2,q*.3);
+      });
+    });
     control(D,286,-647,'SINTER FEED GATE',()=>{
       state.slag=!state.slag;
       return state.slag?'SINTER FEED OPEN / BELT MOVING':'SINTER FEED CLOSED / BELT STOPPED';
@@ -474,6 +503,7 @@ export function createExpansion(scene,m,colliders,interactive,raisedFloors,ramps
     const D=add('WATER TREATMENT / PUMPING',760,495,700);
     yardPad(D,759,523,284,280,m.concrete);
     closedHall(D,713,465,84,42,21,4);
+    const pumpRotors=[];
     for(let row=0;row<2;row++)for(let col=0;col<3;col++){
       const x=688+col*61,z=552+row*63;
       D.cyl(x,1.1,z,21,2.2,m.concrete,30);
@@ -485,7 +515,19 @@ export function createExpansion(scene,m,colliders,interactive,raisedFloors,ramps
         const q=a*PI/4;
         D.box(x+Math.sin(q)*20,3.1,z+Math.cos(q)*20,.6,.18,.6,m.yellow);
       }
+      const rotor=new THREE.Group();
+      for(let j=0;j<4;j++){
+        const fin=new THREE.Mesh(new THREE.BoxGeometry(16,.22,1.0),m.metal);
+        fin.rotation.y=j*PI/4;rotor.add(fin);
+      }
+      rotor.position.set(x,4.1,z);scene.add(rotor);pumpRotors.push(rotor);
     }
+    let pumpAngle=0,pumpPrevious=0;
+    dynamic.push(t=>{
+      const dt=Math.min(.07,Math.max(0,t-pumpPrevious));pumpPrevious=t;
+      if(state.pumps)pumpAngle+=dt*.42;
+      pumpRotors.forEach((rotor,i)=>{rotor.rotation.y=pumpAngle+(i%2)*.22;});
+    });
     for(let x of [661,691,722,753])drum(D,x,359,5,11,m.blue);
     openRack(D,636,422,833,422,5,11);
     openRack(D,840,422,840,555,4,13);
@@ -530,7 +572,12 @@ export function createExpansion(scene,m,colliders,interactive,raisedFloors,ramps
     lift.position.y=22;hook.add(lift);
     const cable=new THREE.Mesh(new THREE.CylinderGeometry(.1,.1,24,8),m.rail);
     cable.position.y=35;hook.add(cable);
-    dynamic.push(t=>{hook.position.set(910,state.portCrane?Math.sin(t*.5)*5:0,-735);});
+    let hoistT=0,hoistPrevious=0;
+    dynamic.push(t=>{
+      const dt=Math.min(.07,Math.max(0,t-hoistPrevious));hoistPrevious=t;
+      if(state.portCrane)hoistT+=dt*.5;
+      hook.position.set(910,Math.sin(hoistT)*5,-735);
+    });
     landmark('OUTER WHARF',623,-938,0);
   }
 
@@ -559,7 +606,6 @@ export function createExpansion(scene,m,colliders,interactive,raisedFloors,ramps
     }
     sign(D,-214,955,['13   DEPOT','PERIMETER SERVICES']);
     control(D,218,992,'DEPOT WEIGHBRIDGE',()=>{
-      state.inspections.add('WEIGHBRIDGE LOG');
       return 'VEHICLE WEIGHBRIDGE INSPECTION RECORDED';
     });
     for(let i=0;i<6;i++){
