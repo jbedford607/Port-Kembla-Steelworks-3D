@@ -21,3 +21,93 @@
 #error { position:fixed; left:16px; bottom:16px; right:16px; background:#210e0eea; padding:18px; color:#ffd4c3; border:1px solid #b85647; z-index:20; font:12px/1.7 monospace; white-space:pre-wrap }
 [hidden] { display:none!important }
 @media(max-width:700px){ #hud{inset:14px 15px auto}.brand strong{font-size:18px}.brand small{font-size:8px}.status{font-size:9px} #hint{font-size:8px;max-width:90vw;white-space:normal;text-align:center} #toast{left:15px;top:92px} }
+
+
+/* THE FURNACE WATCHER — peripheral threat, restrained non-photographic jumpscare. */
+#furnace-horror-hud {
+  position:fixed;bottom:64px;left:30px;width:min(285px,65vw);
+  z-index:5;pointer-events:none;opacity:0;transform:translateY(6px);
+  transition:opacity .6s ease,transform .6s ease;
+  font:10px/1.7 monospace;color:#df8b58;text-shadow:0 1px 8px #000;
+}
+#furnace-horror-hud.visible {opacity:.92;transform:translateY(0);}
+.fh-title {letter-spacing:.10em;font-weight:700;color:#edb082;}
+.fh-meter {margin:7px 0;width:100%;height:3px;background:#68392780;overflow:hidden;}
+.fh-meter>i {display:block;width:0;height:100%;background:linear-gradient(90deg,#aa542f,#ff822e);transition:width .4s linear;box-shadow:0 0 8px #ff4f0088;}
+.fh-state {letter-spacing:.1em;min-height:14px;color:#ffb28b;}
+.fh-controls {margin-top:5px;color:#b5a8a0;font-size:9px;}
+#furnace-horror-vignette {
+ position:fixed;inset:0;z-index:4;pointer-events:none;opacity:0;transition:opacity .3s ease;
+ background:radial-gradient(ellipse at 50% 42%,transparent 35%,#10070788 75%,#030201ef 100%);
+ mix-blend-mode:multiply;
+}
+#furnace-horror-vignette:not(.visible){opacity:0!important;}
+#furnace-horror-flash {
+  position:fixed;inset:0;z-index:50;pointer-events:none;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;visibility:hidden;overflow:hidden;
+  background:radial-gradient(ellipse,#421505 0%,#070607 52%,#000 93%);
+}
+#furnace-horror-flash.active {
+ visibility:visible;animation:fh-fright 1.25s ease-out forwards;
+}
+#furnace-horror-flash.near-miss:not(.active){
+ visibility:visible;opacity:.19;
+ animation:fh-near .20s ease-out forwards;
+}
+.fh-noise{
+ position:absolute;inset:0;opacity:.22;
+ background:repeating-linear-gradient(0deg,#bb663211 0px,#00000000 2px,#1b070511 4px),
+ repeating-linear-gradient(93deg,#07020055 0 2px,transparent 3px 7px);
+ animation:fh-drift .18s steps(3) infinite;
+}
+.fh-head{
+ width:min(45vw,470px);height:min(72vh,650px);
+ position:relative;
+ transform:perspective(600px) rotate(5deg) scale(1.14);
+ clip-path:polygon(23% 8%,40% 0,66% 2%,84% 18%,92% 40%,80% 90%,56% 100%,27% 92%,8% 49%);
+ background:
+ linear-gradient(72deg,transparent 32%,#ff7c1f39 34%,transparent 35%),
+ repeating-linear-gradient(177deg,transparent 0 27px,#8c361814 28px 31px),
+ radial-gradient(ellipse at 45% 37%,#333a39 0%,#161c1c 19%,#040607 58%,#08090d 90%);
+ border:9px solid #101314;
+ box-shadow:inset 8px 0 44px #f8561436,inset -20px -5px 45px #000,0 0 100px #f04d1229;
+}
+.fh-head:before,.fh-head:after {content:'';position:absolute;background:#101516}
+.fh-head:before {width:22%;height:70%;left:9%;top:30%;transform:rotate(16deg);box-shadow:14px 0 10px #101112}
+.fh-head:after {width:25%;height:80%;right:6%;top:19%;transform:rotate(-13deg);box-shadow:-10px 0 8px #101112}
+.fh-eyes {position:absolute;top:26%;left:22%;width:61%;display:flex;justify-content:space-between;z-index:4;}
+.fh-eyes i{display:block;width:31%;height:20px;transform:skewY(-11deg);border-radius:56% 15% 40% 13%;background:#ffc678;
+ box-shadow:0 0 11px 8px #ff420b,0 0 40px 18px #ff4f119c,0 0 82px #ff3b0e;}
+.fh-eyes i:last-child {transform:skewY(11deg) scaleX(-1);}
+.fh-scar {position:absolute;top:27%;left:50%;width:6%;height:50%;background:linear-gradient(#db4504,transparent,#ff6317,transparent);
+ transform:rotate(8deg);box-shadow:0 0 16px #ff480b95;z-index:3;}
+.fh-jaw {position:absolute;bottom:7%;left:25%;width:52%;height:29%;
+ clip-path:polygon(5% 0,95% 0,86% 100%,13% 100%);
+ background:repeating-linear-gradient(93deg,#0d1213 0 16px,#a44321 16px 18px,#010404 18px 33px);
+ box-shadow:inset 0 15px 45px #000;border-top:15px solid #1a2021;
+ z-index:4;}
+.fh-warning {
+ position:absolute;bottom:6%;width:100%;font:700 clamp(13px,2vw,25px) monospace;
+ letter-spacing:.36em;text-align:center;color:#ffad72;text-shadow:0 0 22px #ff4415;
+}
+@keyframes fh-fright {
+  0%{opacity:0;transform:scale(.88)}
+  6%{opacity:1;transform:scale(1.14) translateX(-9px)}
+  20%{opacity:1;transform:scale(1.15) translateX(4px)}
+  54%{opacity:1;transform:scale(1.2)}
+  83%{opacity:.8;transform:scale(1.18)}
+  100%{opacity:0;visibility:hidden;transform:scale(1.12)}
+}
+@keyframes fh-near {0%{opacity:0}40%{opacity:.19}100%{opacity:0;visibility:hidden}}
+@keyframes fh-drift {0%{transform:translateY(0)}100%{transform:translateY(7px)}}
+@media (prefers-reduced-motion:reduce){
+ .fh-noise{animation:none!important}
+ #furnace-horror-flash.active{animation:fh-fright-calm 1.25s forwards;}
+ @keyframes fh-fright-calm {0%{opacity:0}15%{opacity:1}75%{opacity:.8}100%{opacity:0;visibility:hidden}}
+}
+@media(max-width:700px){
+ #furnace-horror-hud{left:15px;bottom:64px;width:62vw}
+ .fh-warning{letter-spacing:.1em;}
+ .fh-head{width:75vw;height:66vh}
+}
