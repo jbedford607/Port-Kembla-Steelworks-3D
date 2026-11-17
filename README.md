@@ -69,6 +69,35 @@ No copyrighted or external audio files are needed. The creature and sounds are r
 | H / M | Help / sector list |
 | Escape | Release mouse |
 
+## Bigger world (13 sectors)
+
+The map now extends beyond the original core into a wider, connected steelworks complex. New industrial areas are intentionally *fictional*, with plausible logistics rather than an exact surveyed Port Kembla layout.
+
+**Original sectors 1–6:** entrance, raw materials, blast furnaces, steelmaking/casting, rolling/dispatch and maintenance workshops.
+
+**New sectors 7–13:**
+
+- **7. Freight shunting yard:** multiple parallel tracks, sidings, open sheds, signal control and a moving freight consist.
+- **8. Scrap recycling:** separated material bays, shredder hall, gantry rails and a moving magnetic crane.
+- **9. Energy and gas:** substation, transformer arrays, gas vessels, supported cable and pipe runs, working breaker indicator.
+- **10. Ore and sinter:** larger ore piles, conveyor chain, stockpile handling sheds and an active sinter feed.
+- **11. Water treatment:** clarifier basins, pump house, working water-pump rotors and service pipe racks.
+- **12. Outer wharf:** longer quayside, dock cranes, unloading platforms and moving hoist equipment.
+- **13. Perimeter service depot:** service workshops, truck parking, a weighbridge and inspection control.
+
+Connected service roads, road markings, drainage covers, lights, safety rails, concrete joints and overhead pipelines join the old and new facilities.
+
+### Find your way
+
+- Press **M** for an enlarged interactive overhead map. Click a sector to travel directly to its road access point.
+- Press **1–9** for sectors 1–9; **0** for sector 10; **-** for 11; **=** for 12; and **`** for 13.
+- Interact with labelled control panels using **E**. Machinery toggles have visible effects, and the operations counter records unique service-panel inspections. None of the map is locked.
+- Night horror, hiding cabinets, false sightings and navigation boundaries now extend into the new industrial zones.
+
+### Performance and verification
+
+The extended map batches static geometry by material and district, culls distant districts, and uses existing quality presets and world-aligned textures. Project build checks include a Node-based real-geometry smoke test of all 13 waypoints, finite mesh geometry and functional controls. The smoke test cannot replace a real Firefox graphical test.
+
 ## Features
 
 - Harbour unloading, ore stockpiles, coke ovens, sinter and gas processing
@@ -83,8 +112,12 @@ No copyrighted or external audio files are needed. The creature and sounds are r
 
     index.html              Browser entry
     src/game.js             Camera, weather, rendering, controls
-    src/world.js            Buildings, world geometry, vehicles, workers
+    src/world.js            Original six industrial sectors and scene management
+    src/expansion.js        Seven additional sites, roads, machinery, logistics
     src/materials.js        Seamless world-aligned materials
+    src/horror.js           Furnace Watcher behaviour and sounds
+    src/night_fx.js         Hiding, flashlight, night lamps and decoys
+    tests/world-smoke.mjs   Geometry and machinery regression tests
     src/style.css           Minimal overlay
     docs/ARCHITECTURE.md    Engineering notes and next steps
     assets/models/          Future GLB/Blender models
@@ -92,7 +125,7 @@ No copyrighted or external audio files are needed. The creature and sounds are r
 
 ## Known limits
 
-This is an artistic game map, not a measured replica or a diagram of operating infrastructure. Many large halls are still closed; rail and workers follow scripted routes. Raised walkways are currently visual objects and need player-floor collision improvements. Automated checks cover syntax/build, not visual correctness on Firefox. Real GLB assets and complete indoor factories will be added in later versions.
+This is an artistic game map, not a measured replica or a diagram of operating infrastructure. Many large halls are still closed; rail and workers follow scripted routes. Raised walkways have basic step/ramp floor collision but railing collisions and accessibility are incomplete. Automated checks cover syntax/build, not visual correctness on Firefox. Real GLB assets and complete indoor factories will be added in later versions.
 
 The steelmaking workflow was informed by public BlueScope explanations: https://www.bluescope.com/our-steel/steelmaking
 
