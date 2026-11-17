@@ -16,21 +16,22 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - name: Install Android SDK
+      - name: Install Android SDK and Native Build Tools
         run: |
           SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -name sdkmanager -type f | head -1)"
           if [ -z "$SDKMANAGER" ]; then echo "SDK manager absent"; exit 1; fi
           yes | "$SDKMANAGER" --licenses >/dev/null || true
-          "$SDKMANAGER" 'platforms;android-35' 'build-tools;35.0.0'
+          "$SDKMANAGER" 'platforms;android-35' 'build-tools;35.0.0' 'ndk;27.2.12479018' 'cmake;3.22.1'
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
-      - name: Unpack app
-        run: mkdir -p S24Assistant && tar -xJf S24Assistant_Project.tar.xz -C S24Assistant
-      - name: Build debug APK
+      - name: Unpack app and local inference engine
         run: |
-          sed -i 's/setTextAllCaps(/setAllCaps(/g' S24Assistant/app/src/main/java/com/localaxis/assistant/MainActivity.java
-          cd S24Assistant && gradle --no-daemon assembleDebug
+          mkdir -p S24Assistant
+          tar -xJf S24Assistant_Project.tar.xz -C S24Assistant
+          git clone --recursive --depth 1 --branch v0.6.0 https://github.com/ggml-org/llama.cpp.git S24Assistant/app/src/main/cpp/llama.cpp
+      - name: Build arm64 APK
+        run: cd S24Assistant && gradle --no-daemon assembleDebug
       - name: Publish APK
         run: |
           mkdir -p releases
