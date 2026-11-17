@@ -321,7 +321,7 @@ public class MainActivity extends Activity {
             ((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(drawer.getWindowToken(),0);
             web.requestFocus();
         }
-        if (pad!=null) pad.setVisibility(View.GONE);
+        if (pad!=null) pad.setVisibility(opening ? View.GONE : View.VISIBLE);
     }
 
     private void buildPad() {
@@ -369,6 +369,11 @@ public class MainActivity extends Activity {
         key.setOnClickListener(v -> {
             v.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY);
             handlePadInput(code);
+        });
+        if (select) key.setOnLongClickListener(v -> {
+            v.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS);
+            sendKey(KeyEvent.KEYCODE_ENTER);
+            return true;
         });
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                     dp(select?44:43),dp(42));
@@ -485,10 +490,11 @@ public class MainActivity extends Activity {
     @Override protected void onNewIntent(Intent i) {
         super.onNewIntent(i);
         if(drawer!=null) drawer.setVisibility(View.GONE);
+        if (pad!=null) pad.setVisibility(View.VISIBLE);
         if (web!=null) web.requestFocus();
     }
     @Override public void onWindowFocusChanged(boolean focus) { super.onWindowFocusChanged(focus); if (focus) immersive(); }
     @Override protected void onPause(){if(web!=null)web.onPause();super.onPause();}
-    @Override protected void onResume(){super.onResume();immersive();if(web!=null)web.onResume();}
+    @Override protected void onResume(){super.onResume();immersive();if(web!=null)web.onResume();if (pad!=null && drawer!=null && drawer.getVisibility()!=View.VISIBLE) pad.setVisibility(View.VISIBLE);}
     @Override protected void onDestroy(){if(web!=null)web.destroy();super.onDestroy();}
 }
