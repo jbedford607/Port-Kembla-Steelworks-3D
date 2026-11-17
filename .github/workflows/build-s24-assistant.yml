@@ -31,7 +31,16 @@ jobs:
           tar -xJf S24Assistant_Project.tar.xz -C S24Assistant
           git clone --recursive --depth 1 --branch v0.6.0 https://github.com/ggml-org/llama.cpp.git S24Assistant/app/src/main/cpp/llama.cpp
       - name: Build arm64 APK
-        run: cd S24Assistant && gradle --no-daemon assembleDebug
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('S24Assistant/app/src/main/cpp/native_brain.cpp')
+          code=p.read_text()
+          code=code.replace('llama_batch_ext_set_pos(batch,idx,start+i);','const llama_pos p=start+i; llama_batch_ext_set_pos(batch,idx,&p);')
+          code=code.replace('mp.n_gpu_layers=0; mp.use_mmap=true;','mp.n_gpu_layers=0;')
+          p.write_text(code)
+          PY
+          cd S24Assistant && gradle --no-daemon assembleDebug
       - name: Publish APK
         run: |
           mkdir -p releases
