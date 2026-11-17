@@ -127,10 +127,10 @@
 #steel-stamina i {display:block;height:3px;width:100%;margin-top:5px;
  background:linear-gradient(90deg,#aa7f41,#f6bc72);box-shadow:0 0 8px #ff5a2429;transition:width .1s linear;}
 #steel-hiding-view {position:fixed;inset:0;z-index:6;pointer-events:none;opacity:0;visibility:hidden;
- background:#010304e5;transition:opacity .28s ease,visibility .28s;}
+ background:linear-gradient(to bottom,#010304 0%,#010304 29%,#01030420 32%,#01030420 50%,#010304 55%,#010304 100%);transition:opacity .28s ease,visibility .28s;}
 #steel-hiding-view.visible {opacity:1;visibility:visible;}
 .steel-hiding-slit {position:absolute;left:8%;right:8%;top:30%;height:24%;
- background:#060b0b;box-shadow:0 0 45px 65px #010304 inset;
+ background:transparent;box-shadow:0 0 30px #010304 inset;
  border-top:12px solid #182329;border-bottom:16px solid #131b20;opacity:.82;
  clip-path:polygon(0 0,100% 0,97% 100%,3% 100%);}
 .steel-hiding-text {position:absolute;bottom:12%;left:10%;right:10%;color:#d0ad8d;
