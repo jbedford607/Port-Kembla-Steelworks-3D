@@ -419,7 +419,7 @@ export function createFurnaceWatcher(scene, world, camera, opts={}) {
       if(state.phaseTime>7 || state.pressure>12)changePhase('stalk');
       else if(!visible&&!context.hidden&&state.unseenFor>3.5&&d>50&&state.stun<=0)navigate(player,1.55,dt);
     } else if(state.phase==='stalk'){
-      if(!safe&&!context.hidden&&state.cooldown<=0 && (state.pressure>33 || (state.seenFor>2.7&&d<40) || (d<12&&monsterSees))){
+      if(!safe&&!context.hidden&&state.cooldown<=0 && ((state.pressure>33&&monsterSees) || (state.seenFor>2.7&&d<40) || (d<12&&monsterSees))){
         changePhase('chase');
       } else if(d>17){
         const speed=state.stun>0?0:visible?.35:context.crouching?1.5:2.5;
