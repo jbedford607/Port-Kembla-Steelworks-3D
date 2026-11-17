@@ -7,7 +7,7 @@
     "dev": "vite --host 127.0.0.1",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "check": "node --check src/game.js && node --check src/world.js && node --check src/materials.js"
+    "check": "node --check src/game.js && node --check src/world.js && node --check src/materials.js && node --check src/horror.js"
   },
   "dependencies": {
     "three": "0.187.0"
