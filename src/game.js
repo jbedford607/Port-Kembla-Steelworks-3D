@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { createMaterials } from './materials.js';
 import { createWorld } from './world.js';
+import { createFurnaceWatcher } from './horror.js';
 import './style.css';
 
 const canvas=document.getElementById('world');
@@ -106,6 +107,11 @@ function main(){
   camera.rotation.order='YXZ';
   let yaw=world.landmarks[0].yaw,pitch=-.06;
   let quality=1,weather=0;
+  const horror=createFurnaceWatcher(scene,world,camera,{
+    onScare(){show('SIGNAL LOST / THE WATCHER FOUND YOU',1.25);},
+    onChase(){show('HOSTILE ENTITY / RUN',2.1);},
+    onRespawn(){teleport(0);show('RESTARTING SHIFT / STAY ALERT',3);}
+  });
   const qualities=[
     {name:'PERFORMANCE',scale:.70,maxPixels:1150000,shadows:false},
     {name:'BALANCED',scale:1.0,maxPixels:2000000,shadows:true},
@@ -148,6 +154,7 @@ function main(){
       sun.color.set('#526b8d');sun.intensity=.16;ambient.intensity=.46;
       rays.visible=false;
     }
+    horror.setNight(weather===3,PLAYER);
     show(stormNames[weather],2.4);
   }
 
@@ -173,6 +180,7 @@ function main(){
     const l=world.landmarks[index];if(!l)return;
     PLAYER.x=l.pos[0];PLAYER.y=l.pos[1];PLAYER.z=l.pos[2];PLAYER.vy=0;
     yaw=l.yaw;pitch=-.04;
+    horror.onPlayerTeleport(PLAYER);
     show('SECTOR / '+l.name,2.5);
   }
   function move(dt){
@@ -245,6 +253,7 @@ function main(){
       (document.pointerLockElement===canvas?'WASD MOVE · SHIFT RUN · SPACE JUMP · H HELP':'CLICK TO LOOK · WASD MOVE · T WEATHER · Q QUALITY');
   }
   canvas.addEventListener('click',()=>{
+    horror.tryAudio();
     if(document.pointerLockElement!==canvas)canvas.requestPointerLock?.();
   });
   document.addEventListener('pointerlockchange',()=>{
@@ -257,11 +266,13 @@ function main(){
     pitch=Math.max(-1.48,Math.min(1.48,pitch-e.movementY*.0021));
   });
   document.addEventListener('keydown',e=>{
+    if(weather===3 && e.code!=='KeyK')horror.tryAudio();
     if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();
     keys.add(e.code);
     if(e.repeat)return;
     if(e.code==='KeyT'){weather=(weather+1)%4;applyWeather();}
     if(e.code==='KeyQ'){quality=(quality+1)%3;applyQuality();}
+    if(e.code==='KeyK'){show(horror.toggleMute()?'HORROR SOUND ON':'HORROR SOUND MUTED',2.2);}
     if(e.code==='KeyV'){PLAYER.fly=!PLAYER.fly;PLAYER.vy=0;show(PLAYER.fly?'FLIGHT ENABLED':'WALK MODE');}
     if(e.code==='KeyH'){help.hidden=!help.hidden;}
     if(e.code==='KeyM'){siteMap.hidden=!siteMap.hidden;}
@@ -284,10 +295,14 @@ function main(){
       }
       lightning=Math.max(0,lightning-dt*15);
       ambient.intensity=(weather===1?.8:weather===3?.46:weather===2?1.6:1.3)+lightning;
-      move(dt);resize();
+      if(!horror.inScare())move(dt);
+      resize();
       sky.position.copy(camera.position);
       skyMaterial.uniforms.uTime.value=time;
       world.update(time,dt,camera,quality);
+      horror.update(time,dt,PLAYER);
+      const fovTarget=75+(weather===3?Math.min(5,horror.getThreat()*5):0);
+      if(Math.abs(camera.fov-fovTarget)>.04){camera.fov+=(fovTarget-camera.fov)*Math.min(1,dt*3);camera.updateProjectionMatrix();}
       updateRain(dt);
       updateHud(now);
       renderer.render(scene,camera);
