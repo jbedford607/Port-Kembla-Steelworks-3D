@@ -216,7 +216,7 @@ export function createFurnaceWatcher(scene, world, camera, opts={}) {
 
   // Coarse, bounded A* keeps the entity out of closed halls rather than clipping through them.
   // Calculations run at most ~once per 1.5 seconds.
-  const STEP=13,BOUND=600,offset=Math.floor(BOUND/STEP),limit=2*offset;
+  const STEP=13,BOUND=1500,offset=Math.floor(BOUND/STEP),limit=2*offset;
   function astar(sx,sz,tx,tz){
     const toGrid=(v)=>Math.max(-offset,Math.min(offset,Math.round(v/STEP)));
     const start=[toGrid(sx),toGrid(sz)],end=[toGrid(tx),toGrid(tz)];
@@ -269,7 +269,9 @@ export function createFurnaceWatcher(scene, world, camera, opts={}) {
     return [];
   }
   const safeZones=[
-    [-18,410,31], [92,330,22], [301,333,16]
+    [-18,410,31], [92,330,22], [301,333,16],
+    [465,913,18],[-447,873,16],[-760,-279,18],
+    [-26,-540,16],[596,401,20],[656,-654,17],[218,992,20]
   ];
   function nearSafe(x,z){return safeZones.some(p=>horizontal(x,z,p[0],p[1])<p[2]);}
   function spawn(player,near=78,requireHidden=false){
@@ -280,7 +282,7 @@ export function createFurnaceWatcher(scene, world, camera, opts={}) {
     for(let i=0;i<48;i++){
       const r=rand(near*.7,near*1.25),a=rand(-Math.PI,Math.PI);
       const x=px+Math.cos(a)*r,z=pz+Math.sin(a)*r;
-      if(Math.abs(x)>475||Math.abs(z)>435||!posClear(x,z)||nearSafe(x,z))continue;
+      if(Math.abs(x)>1260||Math.abs(z)>1350||!posClear(x,z)||nearSafe(x,z))continue;
       const d=horizontal(x,z,px,pz),fwd=((x-px)*forward.x+(z-pz)*forward.z)/d;
       const sight=lineClear(x,z,px,pz);
       if(requireHidden && fwd>.15 && sight)continue;
