@@ -8,7 +8,8 @@ export function createFurnaceWatcher(scene, world, camera, opts={}) {
     seenFor:0,unseenFor:0,stuckFor:0,repath:0,hideFor:0,footclock:0,
     cooldown:0,captureTime:0,strobe:0,mute:false,master:.58,
     seenRecently:false,ready:false,goal:[],targetIndex:0,
-    lastX:0,lastZ:0,nextFright:0,nearMiss:0};
+    lastX:0,lastZ:0,nextFright:0,nearMiss:0,lostSight:0,stun:0,flareCooldown:0,
+    lastTargetX:0,lastTargetZ:0,ambientClock:8,heartbeatClock:0,hiddenFor:0};
   const root=new THREE.Group();
   root.visible=false;root.name='FURNACE WATCHER';
   scene.add(root);
@@ -176,6 +177,11 @@ export function createFurnaceWatcher(scene, world, camera, opts={}) {
       burst(1.65,.50,2000,110);
     }
     if(kind==='sting'){tone(680,63,.54,.25,'sawtooth',1450);burst(.50,.20,1300,90);}
+    if(kind==='electrical'){burst(.32,.15*attenuation,2200,320);tone(190,65,.26,.12*attenuation,'sawtooth',2400);}
+    if(kind==='heartbeat'){tone(72,48,.16,.25*attenuation,'sine',220);tone(87,51,.11,.12*attenuation,'triangle',270);}
+    if(kind==='breath'){burst(1.7,.09*attenuation,360,130);tone(60,37,1.6,.09*attenuation,'sine',180);}
+    if(kind==='flare'){tone(930,110,.47,.22*attenuation,'sawtooth',1800);burst(.5,.15*attenuation,1900,230);}
+    if(kind==='steam'){burst(1.7,.08*attenuation,1500,500);}
   }
 
   const rand=(a,b)=>a+Math.random()*(b-a);
@@ -291,6 +297,8 @@ export function createFurnaceWatcher(scene, world, camera, opts={}) {
     state.night=true;state.phase='watch';state.phaseTime=0;state.time=0;
     state.pressure=0;state.seenFor=0;state.unseenFor=0;state.cooldown=3;
     state.repath=0;state.nextFright=10;state.captureTime=0;
+    state.flareCooldown=0;state.stun=0;state.lostSight=0;
+    state.lastTargetX=player.x;state.lastTargetZ=player.z;state.ambientClock=7;
     root.visible=spawn(player,92,true);
     hud.classList.add('visible');
     vignette.classList.add('visible');
@@ -298,6 +306,7 @@ export function createFurnaceWatcher(scene, world, camera, opts={}) {
   }
   function exitNight(){
     state.night=false;state.phase='dormant';state.pressure=0;state.captureTime=0;
+    state.stun=0;state.flareCooldown=0;state.lostSight=0;state.hiddenFor=0;
     root.visible=false;flash.classList.remove('active');hud.classList.remove('visible');
     vignette.classList.remove('visible');
     if(humGain&&audio)humGain.gain.setTargetAtTime(0,audio.currentTime,.15);
@@ -346,9 +355,14 @@ export function createFurnaceWatcher(scene, world, camera, opts={}) {
     state.repath=0;
     return false;
   }
-  function update(time,dt,player) {
+  function update(time,dt,player,context={}) {
     if(!state.night)return;
     state.time+=dt;state.phaseTime+=dt;state.cooldown=Math.max(0,state.cooldown-dt);
+    state.stun=Math.max(0,state.stun-dt);
+    state.flareCooldown=Math.max(0,state.flareCooldown-dt);
+    state.ambientClock-=dt;
+    state.heartbeatClock-=dt;
+    state.hiddenFor=context.hidden?state.hiddenFor+dt:0;
     if(state.phase==='caught'){
       state.captureTime+=dt;
       root.visible=false;
@@ -370,46 +384,76 @@ export function createFurnaceWatcher(scene, world, camera, opts={}) {
     const inFront=(((x-player.x)*dir.x+(z-player.z)*dir.z)/Math.max(d,.01))>.71;
     const visible= inFront && d<160 && lineClear(player.x,player.z,x,z);
     const safe=nearSafe(player.x,player.z);
+    // Separate the player's sight of the creature from its awareness of the player.
+    // Stillness and concealment matter; sprinting creates more opportunities to be found.
+    const monsterSees=!context.hidden&&!safe&&
+      d<(context.crouching?53:context.sprinting?145:103)&&lineClear(x,z,player.x,player.z);
+    if(monsterSees){
+      state.lostSight=0;
+      state.lastTargetX=player.x;state.lastTargetZ=player.z;
+    }else state.lostSight+=dt;
+    if(context.flashlightHit&&state.flareCooldown<=0&&d<70){
+      state.flareCooldown=19;
+      state.stun=state.phase==='chase'?1.45:3.3;
+      state.pressure+=1.8;
+      eyeLight.intensity=0.4;
+      fx('flare',d);
+    }
+    if(context.hidden)state.pressure=Math.max(0,state.pressure-dt*2.8);
 
     if(visible) { state.seenFor+=dt;state.unseenFor=0;state.seenRecently=true; }
     else {state.unseenFor+=dt;state.seenFor=Math.max(0,state.seenFor-dt*.8);}
-    if(safe){
-      state.pressure=Math.max(0,state.pressure-dt*3.2);
+    if(safe||context.hidden){
+      state.pressure=Math.max(0,state.pressure-dt*(safe?3.2:2.8));
       if(state.phase==='chase'&&state.phaseTime>5)changePhase('stalk');
     } else if(state.cooldown<=0) {
       state.pressure+=dt*(state.phase==='watch'?.50:state.phase==='stalk'?.88:.3);
       if(visible && d<95)state.pressure+=dt*.75;
+      if(context.sprinting&&d<145&&monsterSees)state.pressure+=dt*1.15;
+      if(context.crouching&&!monsterSees)state.pressure=Math.max(0,state.pressure-dt*.75);
       if(d<23)state.pressure+=dt*1.8;
     }
 
     if(state.phase==='watch'){
       // Watches from cover, moving in short steps when no longer observed.
       if(state.phaseTime>7 || state.pressure>12)changePhase('stalk');
-      else if(!visible&&state.unseenFor>3.5&&d>50)navigate(player,1.55,dt);
+      else if(!visible&&!context.hidden&&state.unseenFor>3.5&&d>50&&state.stun<=0)navigate(player,1.55,dt);
     } else if(state.phase==='stalk'){
-      if(!safe&&state.cooldown<=0 && (state.pressure>33 || (state.seenFor>2.7&&d<40) || d<12)){
+      if(!safe&&!context.hidden&&state.cooldown<=0 && (state.pressure>33 || (state.seenFor>2.7&&d<40) || (d<12&&monsterSees))){
         changePhase('chase');
       } else if(d>17){
-        const speed=visible?0.35:2.5;
-        if(!safe&&d<145)navigate(player,speed,dt);
+        const speed=state.stun>0?0:visible?.35:context.crouching?1.5:2.5;
+        if(!safe&&!context.hidden&&d<145&&speed>0)navigate(player,speed,dt);
       }
       if(!visible&&d>190&&state.unseenFor>11)spawn(player,85,true);
     } else if(state.phase==='chase'){
-      const speed=Math.min(11.15,8.4+state.phaseTime*.085);
-      const moved=navigate(player,speed,dt);
-      if(d<3.5 && !safe && state.cooldown<=0){ scare(player);return; }
+      // When sight is lost, search the last observed position rather than tracking through walls.
+      const speed=state.stun>0?0:Math.min(11.15,8.4+state.phaseTime*.085);
+      const target=state.lostSight>.65?
+        {x:state.lastTargetX,z:state.lastTargetZ}:player;
+      const moved=speed>0?navigate(target,speed,dt):false;
+      if(d<3.5 && !safe && !context.hidden && monsterSees && state.stun<=0 && state.cooldown<=0){
+        scare(player);return;
+      }
       if(safe&&state.phaseTime>8)changePhase('stalk');
-      else if(d>155 && state.phaseTime>14)changePhase('stalk');
-      if(!moved)state.stuckFor+=dt;else state.stuckFor=0;
+      else if(state.lostSight>5.7 && !monsterSees)changePhase('search');
+      else if(d>175 && state.phaseTime>14)changePhase('stalk');
+      if(!moved && state.stun<=0)state.stuckFor+=dt;else state.stuckFor=0;
       if(state.stuckFor>6&&d>45){state.stuckFor=0;spawn(player,75,true);}
       state.footclock-=dt;
       if(state.footclock<=0){fx('step',d);state.footclock=.43+.05*Math.random();}
+    } else if(state.phase==='search'){
+      if(monsterSees&&!context.hidden&&d<95)changePhase('chase');
+      else {
+        if(state.stun<=0)navigate({x:state.lastTargetX,z:state.lastTargetZ},4.0,dt);
+        if(state.phaseTime>9)changePhase('stalk');
+      }
     }
-    if(state.phase==='stalk'){
+    if(state.phase==='stalk'||state.phase==='search'){
       state.footclock-=dt;
       if(state.footclock<=0 && d<70 && !visible){fx('scrape',d);state.footclock=rand(3.8,6.8);}
     }
-    if(d<23&&!visible&&state.nextFright<state.time&&state.phase==='stalk'&&!safe){
+    if(d<23&&!visible&&state.nextFright<state.time&&state.phase==='stalk'&&!safe&&!context.hidden){
       // Brief non-capture silhouette and metallic sting; no rapid strobing.
       flash.classList.add('near-miss');if(audio)fx('sting',d);
       state.nearMiss=.20;state.nextFright=state.time+rand(19,34);
@@ -418,7 +462,7 @@ export function createFurnaceWatcher(scene, world, camera, opts={}) {
       state.nearMiss-=dt;if(state.nearMiss<=0)flash.classList.remove('near-miss');
     }
 
-    const moving=state.phase==='chase'?1.8:state.phase==='stalk'?.75:.18;
+    const moving=state.stun>0?.07:state.phase==='chase'?1.8:state.phase==='stalk'?.75:state.phase==='search'?.9:.18;
     const step=time*(state.phase==='chase'?9:2.8);
     legs[0].rotation.x=Math.sin(step)*.52*moving;
     legs[1].rotation.x=Math.sin(step+Math.PI)*.52*moving;
@@ -428,16 +472,27 @@ export function createFurnaceWatcher(scene, world, camera, opts={}) {
     torso.rotation.z=Math.sin(time*.72)*.025+(state.phase==='chase'?Math.sin(step*.4)*.06:0);
     head.rotation.y=Math.sin(time*.43)*.16+(visible?Math.sin(time*7)*.022:0);
     root.scale.y=1+Math.sin(time*.82)*.012;
-    eyeLight.intensity=1.9+Math.sin(time*(state.phase==='chase'?14:4))*.75;
+    eyeLight.intensity=state.stun>0?.28:1.9+Math.sin(time*(state.phase==='chase'?14:4))*.75;
     for(let i=0;i<smoke.length;i++){
       const s=smoke[i],q=(time*.16+i/5)%1;
       s.position.set(Math.sin(time+i*3)*(.7+q),2+q*7,-.8+q*.3);
       s.scale.setScalar(2+q*4);
     }
-    const severity=state.phase==='chase'?.95:Math.min(.86,state.pressure/40);
+    const severity=state.phase==='chase'?.95:state.phase==='search'?.71:Math.min(.86,state.pressure/40);
+    if(audio&&audio.state==='running'&&state.heartbeatClock<=0&&severity>.22){
+      fx('heartbeat',Math.max(5,d*.35));
+      state.heartbeatClock=1.1-Math.min(.55,severity*.52);
+    }
+    if(audio&&audio.state==='running'&&state.ambientClock<=0){
+      if(!context.hidden && d<130)fx(Math.random()<.48?'breath':Math.random()<.5?'steam':'electrical',d);
+      state.ambientClock=4.8+Math.random()*8;
+    }
     hud.style.setProperty('--watcher-threat',Math.round(100*severity)+'%');
     meter.style.width=Math.round(100*severity)+'%';
-    phaseLabel.textContent=state.phase==='chase'?'RUN / IT IS COMING':
+    phaseLabel.textContent=context.hidden?'HIDDEN / LISTEN CAREFULLY':
+      state.stun>0?'WATCHER RECOILING / MOVE NOW':
+      state.phase==='search'?'SEARCHING THE LAST SIGHTING':
+      state.phase==='chase'?'RUN / IT IS COMING':
       visible&&d<95?'VISUAL CONTACT / DO NOT LINGER':
       d<34?'MOVEMENT VERY CLOSE':
       state.phase==='stalk'?'SCRAPING DETECTED':'ANOMALY UNCONFIRMED';
@@ -472,6 +527,7 @@ export function createFurnaceWatcher(scene, world, camera, opts={}) {
   }
   return {
     update,setNight,toggleMute,tryAudio:initAudio,onPlayerTeleport,
+    getPosition(){return {x:root.position.x,z:root.position.z};},
     inScare(){return state.phase==='caught';},
     getThreat(){return state.phase==='chase'?1:Math.min(1,state.pressure/35);},
     get phase(){return state.phase;}
