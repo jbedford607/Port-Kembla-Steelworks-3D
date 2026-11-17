@@ -111,3 +111,29 @@
  .fh-warning{letter-spacing:.1em;}
  .fh-head{width:75vw;height:66vh}
 }
+
+/* FUNCTIONAL NIGHT EQUIPMENT / HUD — dark UI, intentionally small. */
+#steel-torch-hint {
+ position:fixed;bottom:65px;right:26px;z-index:5;pointer-events:none;
+ font:11px/1.4 monospace;color:#edcaa5;letter-spacing:.12em;
+ text-shadow:0 1px 8px #000;opacity:0;transition:opacity .3s ease;
+}
+#steel-torch-hint.visible {opacity:.8;}
+#steel-stamina {position:fixed;bottom:98px;left:30px;z-index:5;
+ width:195px;max-width:45vw;height:18px;pointer-events:none;opacity:0;transition:opacity .3s ease;}
+#steel-stamina.visible {opacity:.9;}
+#steel-stamina span {display:block;position:relative;top:1px;left:1px;
+ color:#e6c3a3;letter-spacing:.17em;font:9px monospace;}
+#steel-stamina i {display:block;height:3px;width:100%;margin-top:5px;
+ background:linear-gradient(90deg,#aa7f41,#f6bc72);box-shadow:0 0 8px #ff5a2429;transition:width .1s linear;}
+#steel-hiding-view {position:fixed;inset:0;z-index:6;pointer-events:none;opacity:0;visibility:hidden;
+ background:#010304e5;transition:opacity .28s ease,visibility .28s;}
+#steel-hiding-view.visible {opacity:1;visibility:visible;}
+.steel-hiding-slit {position:absolute;left:8%;right:8%;top:30%;height:24%;
+ background:#060b0b;box-shadow:0 0 45px 65px #010304 inset;
+ border-top:12px solid #182329;border-bottom:16px solid #131b20;opacity:.82;
+ clip-path:polygon(0 0,100% 0,97% 100%,3% 100%);}
+.steel-hiding-text {position:absolute;bottom:12%;left:10%;right:10%;color:#d0ad8d;
+ font:12px monospace;text-align:center;letter-spacing:.13em;text-shadow:0 0 8px #b1542144;}
+@media(max-width:700px){#steel-torch-hint{bottom:66px;right:15px;font-size:9px;}
+ #steel-stamina{left:15px;bottom:122px;width:145px;}}
