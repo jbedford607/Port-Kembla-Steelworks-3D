@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { boxGeometryWorldUV } from './materials.js';
+import { createExpansion } from './expansion.js';
 
 // Publicly documented process order, simplified for a traversable fictional site:
 // harbour/raw stock -> coke & sinter -> blast furnace -> BOS -> casting -> rolling/dispatch.
@@ -536,10 +537,14 @@ export function createWorld(scene,m){
   dynamic.push(t=>{heatLight.intensity=20+8*Math.sin(t*4);});
 
   const state={heat:true,crane:true};
+  const expansion=createExpansion(scene,m,colliders,interactive,raisedFloors,ramps);
+  landmarks.push(...expansion.landmarks);
   for(const zone of zones)zone.finalize(scene);
 
   return {
     landmarks,colliders,interactive,zones,
+    expansion,
+    getVisitedOperations(){return expansion.inspectionCount();},
     floorHeight(x,z,footY=0){
       let h=0;
       for(const r of ramps){
@@ -556,6 +561,7 @@ export function createWorld(scene,m){
     },
     update(t,dt,camera,quality){
       for(const fn of dynamic)fn(t,dt);
+      expansion.update(t,dt,camera,quality);
       for(const zone of zones){
         const dist=camera.position.distanceTo(zone.center);
         zone.group.visible=(zone===ground||dist<Math.max(zone.range,quality===0?600:quality===1?900:1300));
