@@ -22,7 +22,14 @@ export function createNightEvents(scene,world,camera) {
     {x:-212,z:298,title:'MAINTENANCE CABINET'},
     {x:248,z:184,title:'DISPATCH LOCKER'},
     {x:-170,z:15,title:'FURNACE SERVICE CABINET'},
-    {x:395,z:-65,title:'PORT SERVICE BOX'}
+    {x:395,z:-65,title:'PORT SERVICE BOX'},
+    {x:78,z:607,title:'RAIL YARD CABINET'},
+    {x:-472,z:591,title:'SCRAP GATE LOCKER'},
+    {x:-745,z:-11,title:'POWER ROOM LOCKER'},
+    {x:-35,z:-542,title:'STOCKYARD SHELTER'},
+    {x:597,z:437,title:'WATERWORKS LOCKER'},
+    {x:658,z:-712,title:'WHARF CONTROL BOX'},
+    {x:-220,z:940,title:'DEPOT STORAGE CABINET'}
   ];
   for (const spot of hidingSpots){
     const body=new THREE.Group();body.position.set(spot.x,0,spot.z);
@@ -40,7 +47,9 @@ export function createNightEvents(scene,world,camera) {
 
   const lampPositions=[
     [-341,28,288], [-205,24,268], [-185,32,80], [260,27,240],
-    [352,28,-70], [104,23,370],[-305,25,190], [20,27,-201]
+    [352,28,-70], [104,23,370],[-305,25,190], [20,27,-201],
+    [220,24,710], [-380,24,780],[-725,26,-190],[-122,25,-750],
+    [770,26,505],[755,24,-725],[0,24,1080]
   ];
   const lamps=[];
   for(let i=0;i<lampPositions.length;i++){
@@ -50,7 +59,7 @@ export function createNightEvents(scene,world,camera) {
     cube(arm,trim,2.1,.14,.68,0,y-.40,0);
     cube(arm,glass,1.8,.08,.56,0,y-.54,0);
     environment.add(arm);
-    if(i<4){
+    if(i<8){
       const light=new THREE.PointLight(0xffb470,22,67,2);
       light.position.set(x,y-1,z);environment.add(light);lamps.push({light,i,glass});
     }
@@ -146,7 +155,7 @@ export function createNightEvents(scene,world,camera) {
     for(let i=0;i<20;i++){
       const a=Math.atan2(forward.z,forward.x)+((Math.random()<.5?-1:1)*(1.0+Math.random()*1.0));
       const r=48+Math.random()*60,x=player.x+Math.cos(a)*r,z=player.z+Math.sin(a)*r;
-      if(Math.abs(x)>480||Math.abs(z)>440||world.colliders.some(c=>x>c.minX-1&&x<c.maxX+1&&z>c.minZ-1&&z<c.maxZ+1))continue;
+      if(Math.abs(x)>1260||Math.abs(z)>1350||world.colliders.some(c=>x>c.minX-1&&x<c.maxX+1&&z>c.minZ-1&&z<c.maxZ+1))continue;
       if(!intersects(player.x,player.z,x,z))result.push({x,z});
     }
     if(!result.length)return;
