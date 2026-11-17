@@ -104,6 +104,7 @@ function main(){
   const world=createWorld(scene,mats);
   const nightFx=createNightEvents(scene,world,camera);
   const keys=new Set();
+  const visited=new Set([0]);
   const PLAYER={x:world.landmarks[0].pos[0],y:2,z:world.landmarks[0].pos[2],vy:0,grounded:true,fly:false,height:2,stamina:100,sprinting:false};
   camera.position.set(PLAYER.x,PLAYER.y,PLAYER.z);
   camera.rotation.order='YXZ';
@@ -126,6 +127,78 @@ function main(){
   let toastUntil=0,lock=false;
   const stormNames=['SUNBREAK / STORM FRONT','HEAVY THUNDERSTORM','AFTER THE STORM','NIGHT SHIFT'];
   const qTimer=()=>Math.floor(performance.now()/1000);
+  const shortcuts=['1','2','3','4','5','6','7','8','9','0','-','=','`'];
+  const mapCanvas=document.createElement('canvas');
+  mapCanvas.id='steel-map-diagram';mapCanvas.width=620;mapCanvas.height=490;
+  siteMap.querySelector('h2').insertAdjacentElement('afterend',mapCanvas);
+  const mapContent=siteMap.querySelector('.map-content');
+  mapContent.innerHTML='';
+  const listButtons=[];
+  const opsStatus=document.createElement('small');
+  opsStatus.id='steel-ops';document.querySelector('#hud .status')?.append(opsStatus);
+  world.landmarks.forEach((landmark,i)=>{
+    const button=document.createElement('button');
+    button.className='steel-sector-button';
+    button.type='button';
+    button.setAttribute('aria-label','Travel to sector '+(i+1)+': '+landmark.name);
+    const k=document.createElement('b');k.textContent=shortcuts[i]||'M';
+    const name=document.createElement('span');name.textContent=landmark.name;
+    button.append(k,name);
+    button.addEventListener('click',()=>{
+      teleport(i);siteMap.hidden=true;
+    });
+    mapContent.append(button);listButtons.push(button);
+  });
+  function drawSiteMap(){
+    const ctx=mapCanvas.getContext('2d');
+    if(!ctx)return;
+    const w=mapCanvas.width,h=mapCanvas.height;
+    ctx.clearRect(0,0,w,h);ctx.fillStyle='#11191d';ctx.fillRect(0,0,w,h);
+    const project=(x,z)=>[
+      23+(x+1050)/2350*(w-46),
+      23+(z+1200)/2520*(h-46)
+    ];
+    const roads=[
+      [[-5,-1020],[-5,568]],[[330,-230],[330,570]],
+      [[-320,300],[-320,620]],[[-550,-250],[-550,900]],
+      [[-500,568],[730,568]],[[-550,620],[220,620]],
+      [[-5,1034],[555,1034]],[[636,-920],[636,570]],
+      [[-770,78],[-310,78]],[[630,420],[1170,420]]
+    ];
+    ctx.strokeStyle='#50606a';ctx.lineWidth=8;ctx.lineCap='round';
+    for(const [a,b] of roads){
+      const p=project(a[0],a[1]),q=project(b[0],b[1]);
+      ctx.beginPath();ctx.moveTo(...p);ctx.lineTo(...q);ctx.stroke();
+    }
+    ctx.strokeStyle='#aeb2b3';ctx.lineWidth=1;
+    for(let z=643;z<=862;z+=24){
+      const a=project(-65,z),b=project(498,z);
+      ctx.beginPath();ctx.moveTo(...a);ctx.lineTo(...b);ctx.stroke();
+    }
+    ctx.fillStyle='#265263';ctx.fillRect(...project(920,-980),40,205);
+    world.landmarks.forEach((loc,i)=>{
+      const [x,y]=project(loc.pos[0],loc.pos[2]);
+      ctx.beginPath();ctx.arc(x,y,i<6?5:4,0,Math.PI*2);
+      ctx.fillStyle=visited.has(i)?'#ffbf78':'#d0d7d6';ctx.fill();
+      ctx.fillStyle='#061014';ctx.font='bold 10px monospace';ctx.textAlign='center';
+      if(i<9){ctx.fillText(String(i+1),x,y-8);}
+    });
+    const [px,py]=project(PLAYER.x,PLAYER.z);
+    ctx.beginPath();ctx.arc(px,py,6,0,Math.PI*2);ctx.fillStyle='#ff7829';ctx.fill();
+    ctx.strokeStyle='#fff0c5';ctx.lineWidth=2;ctx.stroke();
+    ctx.fillStyle='#e1c6a7';ctx.textAlign='left';
+    ctx.font='14px monospace';ctx.fillText('STEELWORKS / 13 SECTORS',22,22);
+    ctx.font='11px monospace';ctx.fillText('ORANGE = PLAYER',22,h-12);
+    listButtons.forEach((b,i)=>b.classList.toggle('visited',visited.has(i)));
+    opsStatus.textContent='SECTORS '+visited.size+'/'+world.landmarks.length+
+      ' · SERVICE PANELS '+world.getVisitedOperations();
+  }
+  function toggleMap(){
+    siteMap.hidden=!siteMap.hidden;
+    if(!siteMap.hidden){
+      document.exitPointerLock?.();drawSiteMap();
+    }
+  }
 
   function show(text,duration=3){
     toast.textContent=text;toast.style.opacity='1';toastUntil=performance.now()+duration*1000;
@@ -186,7 +259,7 @@ function main(){
     const l=world.landmarks[index];if(!l)return;
     nightFx.exitHiding();
     PLAYER.x=l.pos[0];PLAYER.y=l.pos[1];PLAYER.z=l.pos[2];PLAYER.vy=0;PLAYER.stamina=100;
-    yaw=l.yaw;pitch=-.04;
+    yaw=l.yaw;pitch=-.04;visited.add(index);
     horror.onPlayerTeleport(PLAYER);
     show('SECTOR / '+l.name,2.5);
   }
@@ -263,6 +336,13 @@ function main(){
       fps=Math.round(frames*1000/(now-fpsAt));frames=0;fpsAt=now;
       perf.textContent=qualities[quality].name+' · '+fps+' FPS';
       info.textContent='X '+Math.round(PLAYER.x)+' / Z '+Math.round(PLAYER.z);
+      const sector=world.landmarks.reduce((a,b,i)=>{
+        const da=Math.hypot(PLAYER.x-a.loc.pos[0],PLAYER.z-a.loc.pos[2]);
+        const db=Math.hypot(PLAYER.x-b.pos[0],PLAYER.z-b.pos[2]);
+        return db<da?{loc:b,index:i}:a;
+      },{loc:world.landmarks[0],index:0});
+      if(Math.hypot(PLAYER.x-sector.loc.pos[0],PLAYER.z-sector.loc.pos[2])<145)visited.add(sector.index);
+      opsStatus.textContent='SECTORS '+visited.size+'/'+world.landmarks.length+' · SERVICE PANELS '+world.getVisitedOperations();
     }
     if(now>toastUntil)toast.style.opacity='0';
     const target=world.interact(camera),hidingHint=nightFx.getPrompt(PLAYER);
@@ -295,12 +375,18 @@ function main(){
     if(e.code==='KeyF' && weather===3){show(nightFx.toggleFlashlight()?'FLASHLIGHT ON':'FLASHLIGHT OFF',1.2);}
     if(e.code==='KeyV'){PLAYER.fly=!PLAYER.fly;PLAYER.vy=0;show(PLAYER.fly?'FLIGHT ENABLED':'WALK MODE');}
     if(e.code==='KeyH'){help.hidden=!help.hidden;}
-    if(e.code==='KeyM'){siteMap.hidden=!siteMap.hidden;}
+    if(e.code==='KeyM'){toggleMap();}
     if(e.code==='KeyE'){
       const message=nightFx.interact(PLAYER)||world.activate(camera);
       if(message)show(message,2.7);
     }
-    if(e.code.startsWith('Digit')){const i=Number(e.code.slice(5))-1;if(i>=0&&i<6)teleport(i);}
+    if(e.code.startsWith('Digit')){
+      const num=Number(e.code.slice(5));const i=num===0?9:num-1;
+      if(i>=0&&i<world.landmarks.length)teleport(i);
+    }
+    if(e.code==='Minus'&&world.landmarks[10])teleport(10);
+    if(e.code==='Equal'&&world.landmarks[11])teleport(11);
+    if(e.code==='Backquote'&&world.landmarks[12])teleport(12);
   });
   document.addEventListener('keyup',e=>keys.delete(e.code));
   document.addEventListener('visibilitychange',()=>{if(document.hidden)keys.clear();});
@@ -335,6 +421,7 @@ function main(){
       if(Math.abs(camera.fov-fovTarget)>.04){camera.fov+=(fovTarget-camera.fov)*Math.min(1,dt*3);camera.updateProjectionMatrix();}
       updateRain(dt);
       updateHud(now);
+      if(!siteMap.hidden && frames%3===0)drawSiteMap();
       renderer.render(scene,camera);
       requestAnimationFrame(frame);
     }catch(e){fail(e);}
