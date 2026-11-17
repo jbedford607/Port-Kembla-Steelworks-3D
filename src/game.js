@@ -270,7 +270,7 @@ function main(){
     if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();
     keys.add(e.code);
     if(e.repeat)return;
-    if(e.code==='KeyT'){weather=(weather+1)%4;applyWeather();}
+    if(e.code==='KeyT'){weather=(weather+1)%4;if(weather===3)horror.tryAudio();applyWeather();}
     if(e.code==='KeyQ'){quality=(quality+1)%3;applyQuality();}
     if(e.code==='KeyK'){show(horror.toggleMute()?'HORROR SOUND ON':'HORROR SOUND MUTED',2.2);}
     if(e.code==='KeyV'){PLAYER.fly=!PLAYER.fly;PLAYER.vy=0;show(PLAYER.fly?'FLIGHT ENABLED':'WALK MODE');}
