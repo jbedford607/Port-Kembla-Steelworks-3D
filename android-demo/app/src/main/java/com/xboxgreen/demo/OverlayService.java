@@ -5,160 +5,169 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ServiceInfo;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
-import android.graphics.Typeface;
-import android.graphics.drawable.GradientDrawable;
-import android.media.AudioManager;
-import android.media.ToneGenerator;
+import android.net.Uri;
 import android.os.Build;
 import android.os.IBinder;
 import android.provider.Settings;
-import android.net.Uri;
 import android.view.Gravity;
-import android.view.View;
 import android.view.WindowManager;
-import android.widget.LinearLayout;
-import android.widget.TextView;
+import android.webkit.JavascriptInterface;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.Toast;
+import java.io.InputStream;
 
+/**
+ * Renders the user-controlled floating toolbar as an actual WebGL 2
+ * transparent 3D viewport, not Android 2D buttons or a static image.
+ */
 public class OverlayService extends Service {
-    private static final String CHANNEL="xbox_demo_overlay";
+    private static final String CHANNEL="xbox_true3d_overlay";
     private WindowManager windows;
-    private View upper,lower;
-    private ToneGenerator sound;
+    private WebView overlay;
+    private int dp(float x) { return (int)(getResources().getDisplayMetrics().density*x+.5f); }
 
-    private int d(float n) { return (int)(n*getResources().getDisplayMetrics().density+.5f); }
-
-    @Override public void onCreate(){
+    @Override public void onCreate() {
         super.onCreate();
         windows=(WindowManager)getSystemService(WINDOW_SERVICE);
-        try{sound=new ToneGenerator(AudioManager.STREAM_MUSIC,20);}catch(Exception ignored){}
     }
-    @Override public int onStartCommand(Intent i,int flags,int id){
-        if(!Settings.canDrawOverlays(this)){stopSelf();return START_NOT_STICKY;}
-        try{
-            if(Build.VERSION.SDK_INT>=26){
-                NotificationManager n=(NotificationManager)getSystemService(NOTIFICATION_SERVICE);
-                n.createNotificationChannel(new NotificationChannel(CHANNEL,"Xbox floating overlay",NotificationManager.IMPORTANCE_LOW));
+
+    @Override public int onStartCommand(Intent intent,int flags,int id) {
+        if(!Settings.canDrawOverlays(this)) {
+            Toast.makeText(this,"Allow Display over other apps",Toast.LENGTH_SHORT).show();
+            stopSelf();return START_NOT_STICKY;
+        }
+        try {
+            if(Build.VERSION.SDK_INT>=26) {
+                NotificationChannel channel=new NotificationChannel(CHANNEL,"Xbox 3D overlay",NotificationManager.IMPORTANCE_LOW);
+                ((NotificationManager)getSystemService(NOTIFICATION_SERVICE)).createNotificationChannel(channel);
             }
-            Intent home=new Intent(this,MainActivity.class);
-            home.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            PendingIntent pending=PendingIntent.getActivity(this,1,home,
-                PendingIntent.FLAG_IMMUTABLE|PendingIntent.FLAG_UPDATE_CURRENT);
-            Notification.Builder nb=Build.VERSION.SDK_INT>=26?
+            Intent launcher=new Intent(this,MainActivity.class);
+            launcher.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            PendingIntent pending=PendingIntent.getActivity(this,6,launcher,
+               PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE);
+            Notification.Builder builder=Build.VERSION.SDK_INT>=26?
                 new Notification.Builder(this,CHANNEL):new Notification.Builder(this);
-            Notification notif=nb.setContentTitle("Xbox overlay active")
-                .setContentText("Tap to return to the Xbox launcher")
+            Notification notif=builder.setContentTitle("Xbox 3D overlay")
+                .setContentText("Real-time 3D controls. Tap to return to the launcher.")
                 .setSmallIcon(android.R.drawable.ic_menu_manage)
                 .setContentIntent(pending).setOngoing(true).build();
-            if(Build.VERSION.SDK_INT>=34)
-                startForeground(2208,notif,ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE);
-            else startForeground(2208,notif);
-            if(upper==null)createWindows();
-        }catch(Exception e){
-            Toast.makeText(this,"Overlay unavailable",Toast.LENGTH_SHORT).show();
+            if(Build.VERSION.SDK_INT>=34) {
+                startForeground(3107,notif,ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE);
+            } else {
+                startForeground(3107,notif);
+            }
+            if(overlay==null) create3DOverlay();
+        } catch(Exception e) {
+            Toast.makeText(this,"Could not start 3D overlay",Toast.LENGTH_SHORT).show();
             stopSelf();
         }
         return START_NOT_STICKY;
     }
-    private GradientDrawable plate(int light){
-        GradientDrawable g=new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
-                new int[]{0xF5224111,0xF5071605,0xFA000802});
-        g.setCornerRadius(d(12));
-        g.setStroke(d(1),light);
-        return g;
+
+    private String mime(String p) {
+        if(p.endsWith(".html"))return "text/html";
+        if(p.endsWith(".js"))return "application/javascript";
+        if(p.endsWith(".png"))return "image/png";
+        if(p.endsWith(".css"))return "text/css";
+        return "application/octet-stream";
     }
-    private TextView label(String name,int size){
-        TextView t=new TextView(this);
-        t.setText(name);
-        t.setTextColor(0xFFC5FF79);
-        t.setTextSize(size);
-        t.setTypeface(Typeface.create("sans-serif-condensed",Typeface.BOLD));
-        t.setGravity(Gravity.CENTER);
-        return t;
-    }
-    private WindowManager.LayoutParams params(int height,int gravity,int y){
+
+    private void create3DOverlay() {
+        overlay = new WebView(this);
+        overlay.setBackgroundColor(Color.TRANSPARENT);
+        overlay.setLayerType(WebView.LAYER_TYPE_HARDWARE,null);
+        overlay.setVerticalScrollBarEnabled(false);
+        overlay.setHorizontalScrollBarEnabled(false);
+        WebSettings webSettings=overlay.getSettings();
+        webSettings.setJavaScriptEnabled(true);
+        webSettings.setDomStorageEnabled(true);
+        webSettings.setAllowFileAccess(false);
+        webSettings.setAllowContentAccess(false);
+        webSettings.setSupportZoom(false);
+        webSettings.setBuiltInZoomControls(false);
+        webSettings.setMediaPlaybackRequiresUserGesture(false);
+        webSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
+        overlay.addJavascriptInterface(new Bridge(),"Android");
+        overlay.setWebViewClient(new WebViewClient() {
+            @Override public WebResourceResponse shouldInterceptRequest(WebView v,WebResourceRequest req) {
+                Uri uri=req.getUrl();
+                if(!"xboxgreen.local".equals(uri.getHost()))return null;
+                String p=uri.getPath();
+                if(p==null||p.contains("..")||p.contains("\\"))return null;
+                try {
+                    InputStream in=getAssets().open(p.substring(1));
+                    return new WebResourceResponse(mime(p),null,in);
+                }catch(Exception ignored){return null;}
+            }
+            @Override public boolean shouldOverrideUrlLoading(WebView v,WebResourceRequest req) {
+                return !"xboxgreen.local".equals(req.getUrl().getHost());
+            }
+        });
+        int type=WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
         WindowManager.LayoutParams p=new WindowManager.LayoutParams(
-            WindowManager.LayoutParams.MATCH_PARENT,d(height),
-            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+            WindowManager.LayoutParams.MATCH_PARENT,dp(88),type,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE|
             WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL|
-            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN|
+            WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
             PixelFormat.TRANSLUCENT);
-        p.gravity=gravity;p.y=d(y);
-        return p;
+        p.gravity=Gravity.BOTTOM|Gravity.CENTER_HORIZONTAL;
+        p.y=dp(18);
+        windows.addView(overlay,p);
+        overlay.loadUrl("https://xboxgreen.local/demo/overlay3d.html");
     }
-    private void createWindows(){
-        LinearLayout head=new LinearLayout(this);
-        head.setGravity(Gravity.CENTER_VERTICAL);
-        head.setPadding(d(10),d(4),d(10),d(4));
-        head.setBackground(plate(0xFF81D33F));
-        TextView dot=label("◉",26);
-        head.addView(dot,new LinearLayout.LayoutParams(d(34),-1));
-        TextView title=label("XBOX  /  ANDROID OVERLAY",14);
-        title.setGravity(Gravity.CENTER_VERTICAL);
-        head.addView(title,new LinearLayout.LayoutParams(0,-1,1));
-        TextView close=label("×",28);
-        close.setBackground(plate(0xFF477323));
-        close.setOnClickListener(v->{click();stopSelf();});
-        head.addView(close,new LinearLayout.LayoutParams(d(45),d(39)));
-        upper=head;
-        windows.addView(upper,params(51,Gravity.TOP|Gravity.CENTER_HORIZONTAL,9));
 
-        LinearLayout bottom=new LinearLayout(this);
-        bottom.setGravity(Gravity.CENTER);
-        bottom.setPadding(d(7),d(6),d(7),d(6));
-        bottom.setBackground(plate(0xFF77BA35));
-        add(bottom,"HOME","home");
-        add(bottom,"SPOTIFY","spotify");
-        add(bottom,"FILES","files");
-        add(bottom,"SETTINGS","settings");
-        lower=bottom;
-        windows.addView(lower,params(59,Gravity.BOTTOM|Gravity.CENTER_HORIZONTAL,18));
-    }
-    private void add(LinearLayout line,String text,String action){
-        TextView b=label(text,12);
-        b.setBackground(plate(0xFF325C1D));
-        LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(0,d(44),1);
-        p.setMargins(d(2),0,d(2),0);
-        line.addView(b,p);
-        b.setOnClickListener(v->{click();open(action);});
-    }
-    private void click(){
-        try{if(sound!=null)sound.startTone(ToneGenerator.TONE_PROP_ACK,65);}catch(Exception ignored){}
-    }
-    private void open(String action){
-        try{
-            Intent intent=null;
-            if("home".equals(action)){
-                intent=new Intent(this,MainActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            }else if("spotify".equals(action)){
-                intent=getPackageManager().getLaunchIntentForPackage("com.spotify.music");
-                if(intent==null)Toast.makeText(this,"Spotify is not installed",Toast.LENGTH_SHORT).show();
-            }else if("files".equals(action)){
-                intent=getPackageManager().getLaunchIntentForPackage("com.sec.android.app.myfiles");
-                if(intent==null){
-                    intent=new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                    intent.setType("*/*");intent.addCategory(Intent.CATEGORY_OPENABLE);
+    private class Bridge {
+        @JavascriptInterface public void action(String name) {
+            android.os.Handler handler=new android.os.Handler(getMainLooper());
+            handler.post(()-> {
+                if("close".equals(name)) {stopSelf();return;}
+                try {
+                    Intent i=null;
+                    if("home".equals(name)) {
+                        i=new Intent(OverlayService.this,MainActivity.class);
+                        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    } else if("spotify".equals(name)) {
+                        i=getPackageManager().getLaunchIntentForPackage("com.spotify.music");
+                    } else if("files".equals(name)) {
+                        i=getPackageManager().getLaunchIntentForPackage("com.sec.android.app.myfiles");
+                        if(i==null) {
+                            i=new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                            i.addCategory(Intent.CATEGORY_OPENABLE);
+                            i.setType("*/*");
+                        }
+                    } else if("settings".equals(name)) {
+                        i=new Intent(Settings.ACTION_SETTINGS);
+                    }
+                    if(i!=null) {
+                        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(i);
+                    } else {
+                        Toast.makeText(OverlayService.this,"App unavailable",Toast.LENGTH_SHORT).show();
+                    }
+                } catch(Exception e) {
+                    Toast.makeText(OverlayService.this,"Android blocked this shortcut",Toast.LENGTH_SHORT).show();
                 }
-            }else if("settings".equals(action)){
-                intent=new Intent(Settings.ACTION_SETTINGS);
-            }
-            if(intent!=null){intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);startActivity(intent);}
-        }catch(Exception e){Toast.makeText(this,"Shortcut unavailable",Toast.LENGTH_SHORT).show();}
-    }
-    @Override public void onDestroy(){
-        if(windows!=null){
-            if(upper!=null){try{windows.removeView(upper);}catch(Exception ignored){}upper=null;}
-            if(lower!=null){try{windows.removeView(lower);}catch(Exception ignored){}lower=null;}
+            });
         }
-        if(sound!=null){try{sound.release();}catch(Exception ignored){}sound=null;}
+    }
+
+    @Override public void onDestroy() {
+        if(overlay!=null) {
+            try { windows.removeView(overlay); }catch(Exception ignored){}
+            overlay.stopLoading();
+            overlay.destroy();
+            overlay=null;
+        }
         super.onDestroy();
     }
-    @Override public IBinder onBind(Intent intent){return null;}
+    @Override public IBinder onBind(Intent i){return null;}
 }
