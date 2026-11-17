@@ -44,6 +44,12 @@ Press **T** to cycle weather until **NIGHT SHIFT** (the fourth setting). At nigh
 - Capture: loud industrial impact, animated full-screen jumpscare and respawn.
 - Occasional brief nearby scares without automatic capture.
 - **K** mutes/unmutes generated horror sounds. Audio starts after interacting with the page, as required by Firefox.
+- Night equipment: **F** flashlight. Illuminating its face briefly interrupts a stalk or chase (limited cooldown).
+- Usable lockers/cabinets: approach a labelled locker and press **E** to hide. Press **E** again to emerge.
+- **C** crouch reduces detection; holding **Shift** sprints, consuming stamina that regenerates when not running.
+- It searches your **last known location** if you escape its view; it no longer has perfect wall-penetrating tracking.
+- Rare false sightings, local electrical flicker, close-call scares, pulse/heartbeat and vent-like ambience.
+- Built-in nearby lighting and procedural audio; no extra assets or downloadable sound packs.
 - Day and storm modes do **not** show the horror figure.
 
 No copyrighted or external audio files are needed. The creature and sounds are rendered procedurally. Flash effects are brief and reduced-motion preferences are respected.
