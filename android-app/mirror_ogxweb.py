@@ -115,3 +115,15 @@ if not critical and (ROOT/"boot/xbox_boot.mp4").is_file() and (ROOT/"ogxweb.wasm
     print("OFFLINE READY: all boot + operational background files bundled; missing optional files:",len(errors),flush=True)
 else:
     print("OFFLINE BLOCKED: critical missing",critical[:15],flush=True)
+
+# Bundle the phone adapter and patch the authentic browser frontend at build time.
+# The engine itself is not replaced.
+phone_script=Path("phone-config.js")
+if (ROOT/"index.html").is_file() and phone_script.is_file():
+    html=(ROOT/"index.html").read_text(encoding="utf-8")
+    marker='<script src="asset-loader.js'
+    html=html.replace(marker,'<script src="phone-config.js"></script>\n'+marker,1)
+    # Fix the launch video controls leaking through onto the phone UI.
+    (ROOT/"index.html").write_text(html,encoding="utf-8")
+    (ROOT/"phone-config.js").write_text(phone_script.read_text(encoding="utf-8"),encoding="utf-8")
+    print("PHONE ADAPTER: genuine dashboard controls + 3D menu labels installed",flush=True)

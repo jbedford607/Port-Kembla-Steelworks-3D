@@ -12,6 +12,8 @@ import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.view.Display;
+import android.os.Build;
 import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -49,10 +51,12 @@ public class MainActivity extends Activity {
     private final int DIM = Color.rgb(82, 133, 45);
     private FrameLayout root;
     private WebView web;
-    private LinearLayout toolbar;
     private FrameLayout drawer;
     private LinearLayout pad;
     private TextView error;
+    private TextView padStatus;
+    private int focusedMenu = 0;
+    private final String[] phoneMenus = { "APPS", "MUSIC", "FILES", "SETTINGS" };
     private boolean localBuild;
     private final List<ResolveInfo> apps = new ArrayList<>();
 
@@ -64,6 +68,7 @@ public class MainActivity extends Activity {
         getWindow().setNavigationBarColor(Color.BLACK);
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         immersive();
+        configureHighRefresh();
         root = new FrameLayout(this);
         root.setBackgroundColor(Color.rgb(0, 8, 3));
         setContentView(root);
@@ -77,6 +82,9 @@ public class MainActivity extends Activity {
         s.setJavaScriptEnabled(true);
         s.setDomStorageEnabled(true);
         s.setMediaPlaybackRequiresUserGesture(false);
+        s.setUseWideViewPort(true);
+        s.setLoadWithOverviewMode(false);
+        s.setTextZoom(100);
         s.setBuiltInZoomControls(false);
         s.setDisplayZoomControls(false);
         s.setSupportZoom(false);
@@ -155,7 +163,6 @@ public class MainActivity extends Activity {
         initApps();
         buildDrawer();
         buildPad();
-        buildToolbar();
         localBuild = getAssetsContains("ogxweb/offline.ok");
         web.loadUrl(localBuild ? LOCAL : LIVE);
         web.requestFocus();
@@ -205,27 +212,8 @@ public class MainActivity extends Activity {
         v.setOnClickListener(w -> action.run());
         return v;
     }
-    private void buildToolbar() {
-        toolbar = new LinearLayout(this);
-        toolbar.setOrientation(LinearLayout.HORIZONTAL);
-        toolbar.setGravity(Gravity.CENTER);
-        toolbar.setPadding(dp(6),dp(5),dp(6),dp(8));
-        toolbar.setBackgroundColor(0xDC000701);
-        for (String name : new String[]{"APPS","PAD","RETRY","SETTINGS"}) {
-            Runnable action;
-            if ("APPS".equals(name)) action = () -> toggleDrawer();
-            else if ("PAD".equals(name)) action = () -> { pad.setVisibility(pad.getVisibility()==View.VISIBLE?View.GONE:View.VISIBLE); web.requestFocus(); };
-            else if ("RETRY".equals(name)) action = () -> { error.setVisibility(View.GONE); web.loadUrl(localBuild ? LOCAL : LIVE); };
-            else action = () -> { try {startActivity(new Intent(Settings.ACTION_SETTINGS));} catch (Exception ignored){} };
-            TextView b = button(name,action);
-            LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(0,dp(42),1);
-            p.leftMargin=dp(3);p.rightMargin=dp(3);
-            toolbar.addView(b,p);
-        }
-        FrameLayout.LayoutParams tp = new FrameLayout.LayoutParams(-1, dp(56),Gravity.BOTTOM);
-        root.addView(toolbar,tp);
-    }
     private void initApps() {
+        apps.clear();
         try {
             PackageManager pm = getPackageManager();
             Intent i = new Intent(Intent.ACTION_MAIN);
@@ -335,34 +323,154 @@ public class MainActivity extends Activity {
         }
         if (pad!=null) pad.setVisibility(View.GONE);
     }
+
     private void buildPad() {
+        // Five unobtrusive controls. Xbox geometry behind them remains the genuine 3D engine.
         pad = new LinearLayout(this);
         pad.setGravity(Gravity.CENTER);
         pad.setOrientation(LinearLayout.VERTICAL);
-        pad.setBackground(panel(0xE4000A04,DIM,9));
-        pad.setPadding(dp(6),dp(6),dp(6),dp(7));
-        LinearLayout a = new LinearLayout(this);
-        LinearLayout b = new LinearLayout(this);
-        LinearLayout c = new LinearLayout(this);
-        a.setGravity(Gravity.CENTER);b.setGravity(Gravity.CENTER);c.setGravity(Gravity.CENTER);
-        makePadButton(a,"UP",KeyEvent.KEYCODE_DPAD_UP);
-        makePadButton(b,"LEFT",KeyEvent.KEYCODE_DPAD_LEFT);
-        makePadButton(b,"A",KeyEvent.KEYCODE_ENTER);
-        makePadButton(b,"RIGHT",KeyEvent.KEYCODE_DPAD_RIGHT);
-        makePadButton(c,"DOWN",KeyEvent.KEYCODE_DPAD_DOWN);
-        makePadButton(c,"B",KeyEvent.KEYCODE_ESCAPE);
-        pad.addView(a);pad.addView(b);pad.addView(c);
-        FrameLayout.LayoutParams p = new FrameLayout.LayoutParams(dp(218),dp(174), Gravity.BOTTOM|Gravity.RIGHT);
-        p.bottomMargin=dp(62);p.rightMargin=dp(8);
+        pad.setBackground(panel(0xB8000C04,0xAA48772C,14));
+        pad.setPadding(dp(6),dp(6),dp(6),dp(6));
+
+        padStatus = label("APPS",11,true);
+        padStatus.setTextColor(0xFFB6F073);
+        padStatus.setLetterSpacing(.13f);
+        pad.addView(padStatus,new LinearLayout.LayoutParams(-1,dp(21)));
+
+        LinearLayout top = new LinearLayout(this);
+        LinearLayout middle = new LinearLayout(this);
+        LinearLayout bottom = new LinearLayout(this);
+        top.setGravity(Gravity.CENTER);
+        middle.setGravity(Gravity.CENTER);
+        bottom.setGravity(Gravity.CENTER);
+        addPadKey(top,"▲",KeyEvent.KEYCODE_DPAD_UP,false);
+        addPadKey(middle,"◀",KeyEvent.KEYCODE_DPAD_LEFT,false);
+        addPadKey(middle,"●",KeyEvent.KEYCODE_ENTER,true);
+        addPadKey(middle,"▶",KeyEvent.KEYCODE_DPAD_RIGHT,false);
+        addPadKey(bottom,"▼",KeyEvent.KEYCODE_DPAD_DOWN,false);
+        pad.addView(top);
+        pad.addView(middle);
+        pad.addView(bottom);
+
+        FrameLayout.LayoutParams p = new FrameLayout.LayoutParams(dp(157),dp(164),Gravity.BOTTOM|Gravity.RIGHT);
+        p.bottomMargin=dp(12);
+        p.rightMargin=dp(12);
         root.addView(pad,p);
-        pad.setVisibility(View.GONE);
+        pad.setVisibility(View.VISIBLE);
+        pad.setContentDescription("Xbox controller: up down left right and select. Selected phone menu shown above.");
     }
-    private void makePadButton(LinearLayout line,String name,int key) {
-        TextView t = button(name,()->sendKey(key));
-        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(dp(name.equals("LEFT")||name.equals("RIGHT")?69:58),dp(49));
-        p.setMargins(dp(2),dp(3),dp(2),dp(3));
-        line.addView(t,p);
+
+    private void addPadKey(LinearLayout line,String symbol,int code,boolean select) {
+        TextView key = label(symbol,select ? 25 : 19,true);
+        key.setTextColor(select ? 0xFFD6FF9D : 0xFFA8DB64);
+        key.setBackground(panel(select?0xDD233E12:0xB010240D,
+                                select?0xFF9CD85C:0xFF466A2F,
+                                select?24:8));
+        key.setOnClickListener(v -> {
+            v.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY);
+            handlePadInput(code);
+        });
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                    dp(select?44:43),dp(42));
+        lp.setMargins(dp(2),dp(1),dp(2),dp(1));
+        line.addView(key,lp);
     }
+
+    private void handlePadInput(int code) {
+        if (drawer!=null && drawer.getVisibility()==View.VISIBLE) {
+            if (code==KeyEvent.KEYCODE_ESCAPE) toggleDrawer();
+            else if (code==KeyEvent.KEYCODE_ENTER) toggleDrawer();
+            return;
+        }
+        if (code==KeyEvent.KEYCODE_DPAD_UP) {
+            focusedMenu=(focusedMenu+phoneMenus.length-1)%phoneMenus.length;
+            padStatus.setText(phoneMenus[focusedMenu]);
+            sendKey(code);
+        } else if (code==KeyEvent.KEYCODE_DPAD_DOWN) {
+            focusedMenu=(focusedMenu+1)%phoneMenus.length;
+            padStatus.setText(phoneMenus[focusedMenu]);
+            sendKey(code);
+        } else if (code==KeyEvent.KEYCODE_ENTER) {
+            selectPhoneMenu();
+        } else {
+            // Left and right continue to move the original 3D dashboard camera.
+            sendKey(code);
+        }
+    }
+
+    private void selectPhoneMenu() {
+        switch(focusedMenu) {
+            case 0: toggleDrawer(); break;
+            case 1: openMusic(); break;
+            case 2: openFiles(); break;
+            default: openSystemSettings(); break;
+        }
+    }
+
+    private boolean launchPackage(String pkg) {
+        try {
+            Intent i = getPackageManager().getLaunchIntentForPackage(pkg);
+            if (i == null) return false;
+            startActivity(i); return true;
+        } catch (Exception ignored) { return false; }
+    }
+
+    private void openMusic() {
+        if (launchPackage("com.spotify.music") ||
+            launchPackage("com.sec.android.app.music") ||
+            launchPackage("com.google.android.apps.youtube.music")) return;
+        try {
+            Intent i = Intent.makeMainSelectorActivity(Intent.ACTION_MAIN,Intent.CATEGORY_APP_MUSIC);
+            startActivity(i);
+        } catch (Exception e) {
+            Toast.makeText(this,"Choose a music app",Toast.LENGTH_SHORT).show();
+            toggleDrawer();
+        }
+    }
+
+    private void openFiles() {
+        if (launchPackage("com.sec.android.app.myfiles") ||
+            launchPackage("com.google.android.apps.nbu.files")) return;
+        try {
+            Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+            i.addCategory(Intent.CATEGORY_OPENABLE);
+            i.setType("*/*");
+            startActivity(i);
+        } catch (Exception e) {
+            Toast.makeText(this,"No file browser available",Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void openSystemSettings() {
+        try {startActivity(new Intent(Settings.ACTION_SETTINGS));}
+        catch (Exception e) {Toast.makeText(this,"Settings unavailable",Toast.LENGTH_SHORT).show();}
+    }
+
+    private void configureHighRefresh() {
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED |
+                             WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON |
+                             WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        WindowManager.LayoutParams a = getWindow().getAttributes();
+        if (Build.VERSION.SDK_INT >= 28)
+            a.layoutInDisplayCutoutMode=WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+        try {
+            Display d=getWindowManager().getDefaultDisplay();
+            Display.Mode active=d.getMode();
+            Display.Mode best=active;
+            for (Display.Mode m : d.getSupportedModes()) {
+                // Match the device's native panel dimensions, not a reduced output mode.
+                if (m.getPhysicalWidth()>=best.getPhysicalWidth() &&
+                    m.getPhysicalHeight()>=best.getPhysicalHeight()) {
+                    if (m.getPhysicalWidth()>best.getPhysicalWidth() ||
+                        m.getPhysicalHeight()>best.getPhysicalHeight() ||
+                        m.getRefreshRate()>best.getRefreshRate()) best=m;
+                }
+            }
+            a.preferredDisplayModeId=best.getModeId();
+        } catch (Exception ignored) {}
+        getWindow().setAttributes(a);
+    }
+
     private void sendKey(int code) {
         if (web==null) return;
         web.requestFocus();
@@ -372,7 +480,6 @@ public class MainActivity extends Activity {
     }
     @Override public void onBackPressed() {
         if(drawer!=null&&drawer.getVisibility()==View.VISIBLE){toggleDrawer();return;}
-        if(pad!=null&&pad.getVisibility()==View.VISIBLE){pad.setVisibility(View.GONE);return;}
         sendKey(KeyEvent.KEYCODE_ESCAPE);
     }
     @Override protected void onNewIntent(Intent i) {
@@ -382,6 +489,6 @@ public class MainActivity extends Activity {
     }
     @Override public void onWindowFocusChanged(boolean focus) { super.onWindowFocusChanged(focus); if (focus) immersive(); }
     @Override protected void onPause(){if(web!=null)web.onPause();super.onPause();}
-    @Override protected void onResume(){super.onResume();if(web!=null)web.onResume();}
+    @Override protected void onResume(){super.onResume();immersive();if(web!=null)web.onResume();}
     @Override protected void onDestroy(){if(web!=null)web.destroy();super.onDestroy();}
 }
