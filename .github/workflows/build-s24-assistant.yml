@@ -28,7 +28,9 @@ jobs:
       - name: Unpack app
         run: mkdir -p S24Assistant && tar -xJf S24Assistant_Project.tar.xz -C S24Assistant
       - name: Build debug APK
-        run: cd S24Assistant && gradle --no-daemon assembleDebug
+        run: |
+          sed -i 's/setTextAllCaps(/setAllCaps(/g' S24Assistant/app/src/main/java/com/localaxis/assistant/MainActivity.java
+          cd S24Assistant && gradle --no-daemon assembleDebug
       - name: Publish APK
         run: |
           mkdir -p releases
