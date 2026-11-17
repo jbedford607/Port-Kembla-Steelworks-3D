@@ -94,6 +94,38 @@ public class MainActivity extends Activity {
                 if (path.contains("..") || path.contains("\\")) return null;
                 try {
                     String p = "ogxweb" + path;
+                    if (p.endsWith(".mp4")) {
+                        byte[] b;
+                        try (InputStream in = getAssets().open(p);
+                             java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream()) {
+                            byte[] chunk = new byte[65536];
+                            int n;
+                            while ((n = in.read(chunk)) != -1) out.write(chunk, 0, n);
+                            b = out.toByteArray();
+                        }
+                        String range = r.getRequestHeaders().get("Range");
+                        java.util.Map<String,String> headers = new java.util.HashMap<>();
+                        headers.put("Accept-Ranges","bytes");
+                        if (range != null && range.startsWith("bytes=")) {
+                            try {
+                                String[] parts = range.substring(6).split("-",2);
+                                int begin = Math.max(0,Integer.parseInt(parts[0]));
+                                int end = parts.length>1 && !parts[1].isEmpty()
+                                    ? Math.min(b.length-1,Integer.parseInt(parts[1]))
+                                    : b.length-1;
+                                if (begin <= end && end < b.length) {
+                                    int len = end-begin+1;
+                                    headers.put("Content-Range","bytes "+begin+"-"+end+"/"+b.length);
+                                    headers.put("Content-Length",String.valueOf(len));
+                                    return new WebResourceResponse("video/mp4",null,206,"Partial Content",
+                                        headers,new java.io.ByteArrayInputStream(b,begin,len));
+                                }
+                            } catch (Exception ignored) { }
+                        }
+                        headers.put("Content-Length",String.valueOf(b.length));
+                        return new WebResourceResponse("video/mp4",null,200,"OK",
+                            headers,new java.io.ByteArrayInputStream(b));
+                    }
                     InputStream stream = getAssets().open(p);
                     return new WebResourceResponse(mime(p), "utf-8", stream);
                 } catch (Exception ignored) { return null; }

@@ -98,3 +98,20 @@ if manifest_path.exists():
     else:
         if flag.exists():flag.unlink()
         print("MIRROR INCOMPLETE. Use online original dashboard. Errors",len(errors),flush=True)
+
+# The live site's manifest includes 404s for sample tracks, optional languages
+# and empty .gitkeep placeholders. The dashboard's startup requires the boot
+# tier, not those optional rest-tier assets.
+critical=[]
+for p,why in errors:
+    relative=p.removeprefix("cdn/files/")
+    tier=manifest["files"].get(relative,{}).get("tier")
+    if p=="boot/xbox_boot.mp4" or tier=="boot":
+        critical.append((p,why))
+    elif tier=="background" and not relative.endswith(".gitkeep"):
+        critical.append((p,why))
+if not critical and (ROOT/"boot/xbox_boot.mp4").is_file() and (ROOT/"ogxweb.wasm").is_file():
+    (ROOT/"offline.ok").write_text("Dashboard boot+all operational background assets are bundled; optional rest-tier files omitted.\n")
+    print("OFFLINE READY: all boot + operational background files bundled; missing optional files:",len(errors),flush=True)
+else:
+    print("OFFLINE BLOCKED: critical missing",critical[:15],flush=True)
