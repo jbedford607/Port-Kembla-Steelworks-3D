@@ -35,6 +35,19 @@ Don't double-click index.html: Vite projects are served locally. There is no art
 
 To generate production website files, run npm run build. The files appear in dist/ and can be hosted on GitHub Pages or another static host.
 
+## The Furnace Watcher — nighttime horror
+
+Press **T** to cycle weather until **NIGHT SHIFT** (the fourth setting). At night, a tall, ember-eyed industrial figure watches from the industrial site, moves closer when unobserved, and eventually pursues the player. It avoids solid factory buildings using low-resolution pathfinding. Sprinting and well-lit safe areas offer ways to escape.
+
+- Stalking sounds: metallic footsteps, scraping, low groaning and tension drones.
+- Chase: synthesised furnace-like roar, faster footsteps, subtle field-of-view expansion.
+- Capture: loud industrial impact, animated full-screen jumpscare and respawn.
+- Occasional brief nearby scares without automatic capture.
+- **K** mutes/unmutes generated horror sounds. Audio starts after interacting with the page, as required by Firefox.
+- Day and storm modes do **not** show the horror figure.
+
+No copyrighted or external audio files are needed. The creature and sounds are rendered procedurally. Flash effects are brief and reduced-motion preferences are respected.
+
 ## Controls
 
 | Key | Action |
