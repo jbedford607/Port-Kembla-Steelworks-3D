@@ -3,6 +3,9 @@ on:
   push:
     branches:
       - build/xbox-classic-s24-launcher
+  pull_request:
+    branches:
+      - build/xbox-classic-s24-launcher
   workflow_dispatch:
 
 jobs:
