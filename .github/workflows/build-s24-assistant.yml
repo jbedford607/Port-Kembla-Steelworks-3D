@@ -1,9 +1,9 @@
-name: Build S24 Assistant APK
+name: Build S24 Assistant v0.3 APK
 on:
   push:
     branches: [s24-assistant-build]
     paths:
-      - 'S24Assistant_Project.tar.xz'
+      - 'S24Assistant_Improved_Project.b64.txt'
       - '.github/workflows/build-s24-assistant.yml'
 permissions:
   contents: write
@@ -28,7 +28,7 @@ jobs:
       - name: Unpack app and local inference engine
         run: |
           mkdir -p S24Assistant
-          tar -xJf S24Assistant_Project.tar.xz -C S24Assistant
+          base64 -d S24Assistant_Improved_Project.b64.txt | tar -xJf - -C S24Assistant
           git clone --recursive --depth 1 --branch v0.6.0 https://github.com/ggml-org/llama.cpp.git S24Assistant/app/src/main/cpp/llama.cpp
       - name: Build arm64 APK
         run: |
@@ -48,7 +48,7 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add releases/S24Assistant.apk
-          git commit -m 'Built S24 assistant APK [skip ci]'
+          git commit -m 'Built improved S24 assistant APK [skip ci]'
           git push
       - uses: actions/upload-artifact@v4
         with:
