@@ -137,3 +137,42 @@
  font:12px monospace;text-align:center;letter-spacing:.13em;text-shadow:0 0 8px #b1542144;}
 @media(max-width:700px){#steel-torch-hint{bottom:66px;right:15px;font-size:9px;}
  #steel-stamina{left:15px;bottom:122px;width:145px;}}
+
+/* Large, keyboard-and-mouse navigable industrial sector map. */
+#map {
+ width:min(600px,calc(100vw - 40px));max-width:calc(100vw - 40px);
+ top:50px;bottom:auto;max-height:calc(100vh - 95px);
+ overflow:auto;z-index:8;scrollbar-width:thin;scrollbar-color:#8d664f #1b252a;
+ padding:17px 19px 22px;
+}
+#map h2 {font-size:13px;align-items:center;}
+#map h2 span {font-size:9px;flex-shrink:0;}
+#steel-map-diagram {
+ display:block;width:100%;height:auto;max-height:34vh;
+ background:#11191d;border:1px solid #65747c66;object-fit:fill;
+ margin:12px 0 14px;image-rendering:auto;
+}
+#map .map-content {display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:6px 0 13px;}
+#map .steel-sector-button {
+ font:11px/1.45 monospace;text-align:left;display:flex;gap:9px;align-items:center;
+ color:#d9d7d0;background:#1e292edb;cursor:pointer;
+ border:1px solid #56636c77;border-radius:2px;padding:8px 9px;
+ min-height:34px;box-shadow:none;transition:background .15s,border-color .15s;
+}
+#map .steel-sector-button:hover,#map .steel-sector-button:focus-visible {
+ border-color:#ffb76d;background:#39464a;outline:none;
+}
+#map .steel-sector-button.visited {border-left:2px solid #f4a45e;}
+#map .steel-sector-button b {background:#0e1417;border:1px solid #806c5a;
+ color:#ffbd7f;min-width:24px;padding:2px 3px;text-align:center;font:700 12px monospace;}
+#map .steel-sector-button span {font:10px/1.3 monospace;}
+#steel-ops{color:#d6b996!important;white-space:nowrap;}
+@media(max-width:600px){
+ #map{top:62px;right:12px;width:calc(100vw - 24px);max-width:calc(100vw - 24px);
+ max-height:calc(100vh - 95px);padding:13px 13px 18px;}
+ #map .map-content{gap:5px}
+ #map .steel-sector-button{padding:7px 5px;gap:5px;min-height:38px;}
+ #map .steel-sector-button span{font-size:9px;}
+ #map .steel-sector-button b{font-size:10px;min-width:19px}
+ #steel-ops{font-size:8px!important;}
+}
