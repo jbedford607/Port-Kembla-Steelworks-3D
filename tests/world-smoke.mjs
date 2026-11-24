@@ -29,13 +29,15 @@ assert.equal(world.landmarks.length,13,'Expected 13 connected industrial sectors
 assert.equal(world.expansion.landmarks.length,7,'Expected 7 new facilities');
 assert.ok(world.colliders.length>30,'Factory shells and stockpiles need collisions');
 assert.ok(world.expansion.sectors.length>=9,'New world should be subdivided into cullable districts');
+assert.ok(world.lightSources.length>150,'Expected physical lamp positions');
+assert.ok(world.interactive.filter(x=>x.label.includes('ROLLER SHUTTER')).length>=12,'Enterable halls need operating shutters');
 
 const errors=[];
 for(const [i,landmark] of world.landmarks.entries()){
   const [x,y,z]=landmark.pos;
   if(![x,y,z].every(Number.isFinite))errors.push('Invalid waypoint '+landmark.name);
   const collisions=world.colliders.filter(c=>
-    x>c.minX-.52&&x<c.maxX+.52&&z>c.minZ-.52&&z<c.maxZ+.52
+    (c.base||0)<2&&c.height>.2&&x>c.minX-.52&&x<c.maxX+.52&&z>c.minZ-.52&&z<c.maxZ+.52
   );
   if(collisions.length)errors.push('Waypoint '+(i+1)+' inside '+collisions.length+' solid building(s): '+landmark.name);
 }
@@ -79,3 +81,14 @@ assert.ok(world.getVisitedOperations()>=6,'Operating checks should record intera
 console.log('PASS: '+world.landmarks.length+' districts, '+geos+' meshes, '+
   verts+' vertices, '+world.colliders.length+' collision proxies, '+
   world.getVisitedOperations()+' functional machinery checks.');
+
+const gatePanel=world.interactive.find(x=>x.label.includes('ROLLER SHUTTER'));
+const gate=world.colliders.find(x=>x.base===8&&x.height===16);
+assert.ok(gate,'Expected open overhead door collision');
+gatePanel.activate();
+for(let i=1;i<=300;i++)world.update(7+i/60,1/60,camera,1);
+assert.ok(gate.base<.35,'Shutter must close and block the opening');
+gatePanel.activate();
+for(let i=301;i<=600;i++)world.update(7+i/60,1/60,camera,1);
+assert.ok(gate.base>7,'Shutter must open and clear the opening');
+console.log('PASS: '+world.lightSources.length+' lighting positions and dynamic shutter collision.');

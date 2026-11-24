@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { boxGeometryWorldUV } from './materials.js';
+import { buildInterior } from './interiors.js';
 
 // Fictional industrial extension. Every facility has a recognisable function:
 // linked road/rail access, material flow, maintenance access and service machinery.
@@ -45,7 +46,7 @@ class Sector {
       if(list.length>1)list.forEach(x=>x.dispose());
       if(!g)continue;
       const mesh=new THREE.Mesh(g,m);
-      mesh.receiveShadow=true;mesh.castShadow=true;
+      mesh.receiveShadow=true;mesh.castShadow=!this.name.includes('ROADS')&&!this.name.includes('WATER / QUAY');
       mesh.frustumCulled=true;
       this.group.add(mesh);
     }
@@ -54,7 +55,7 @@ class Sector {
   }
 }
 
-export function createExpansion(scene,m,colliders,interactive,raisedFloors,ramps) {
+export function createExpansion(scene,m,colliders,interactive,raisedFloors,ramps,lightSources=[]) {
   const sectors=[],dynamic=[],state={shunt:true,scrapCrane:true,portCrane:true,
     power:true,pumps:true,slag:true,inspections:new Set()};
   const add=(name,x,z,range=700)=>{const D=new Sector(name,x,z,range);sectors.push(D);return D;};
@@ -125,6 +126,7 @@ export function createExpansion(scene,m,colliders,interactive,raisedFloors,ramps
   }
 
   function industrialLamp(D,x,z,h=19) {
+    lightSources.push({x,y:h-1.1,z,power:650,range:75});
     D.cyl(x,h/2,z,.24,h,m.metal,8,.18);
     D.box(x,h-.7,z,2.9,.29,1.1,m.white,3);
     D.box(x,h-.94,z,2.65,.12,.95,m.light,3);
@@ -171,7 +173,7 @@ export function createExpansion(scene,m,colliders,interactive,raisedFloors,ramps
     D.box(x,h+.33,z,w+1.2,.65,d+1.2,m.roof,7);
     for(let i=0;i<=bays;i++){
       const xx=x-w/2+i*w/bays;
-      for(let zz of [z-d/2+.8,z+d/2-.8])post(D,xx,zz,h);
+      for(let zz of [z-d/2+.8,z+d/2-.8]){post(D,xx,zz,h);block(xx,zz,1.7,1.7,h);}
       if(i<bays){
         D.pipe([xx,h,z-d/2+.8],[xx+w/bays,h,z-d/2+.8],.21,m.metal);
         D.pipe([xx,h,z+d/2-.8],[xx+w/bays,h,z+d/2-.8],.21,m.metal);
@@ -182,6 +184,9 @@ export function createExpansion(scene,m,colliders,interactive,raisedFloors,ramps
     // Enterable shed has no fake collision wall.
   }
   function closedHall(D,x,z,w,d,h,doors=3){
+    if([464,-8,-548,-735,-605,246,713,714,-446,-158,130].includes(x)){
+      buildInterior(D,x,z,w,d,h,m,colliders,interactive,dynamic,lightSources,[-735,-605,713].includes(x)?'control':'service');return;
+    }
     yardPad(D,x,z,w+3,d+3);
     D.box(x,h/2+.24,z,w,h,d,m.cladding,7);
     D.box(x,h+.45,z,w+1.6,.9,d+1.6,m.roof,7);
@@ -245,6 +250,7 @@ export function createExpansion(scene,m,colliders,interactive,raisedFloors,ramps
     D.box(x,2.1,z+r+1.3,2.7,4.2,2.1,m.dark);
   }
   function floodlight(D,x,z,h=21){
+    lightSources.push({x,y:h-.8,z,power:950,range:90});
     D.box(x,h/2,z,.35,h,.35,m.metal);
     D.box(x,h-.45,z,5.2,.22,1,m.metal);
     for(let s of [-1,0,1]){

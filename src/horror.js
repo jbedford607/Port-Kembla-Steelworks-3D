@@ -188,7 +188,7 @@ export function createFurnaceWatcher(scene, world, camera, opts={}) {
   const horizontal=(x,z,y,w)=>Math.hypot(x-y,z-w);
   const padded=(x,z,r=1.2)=>{
     for(const c of aabb){
-      if(x>c.minX-r&&x<c.maxX+r&&z>c.minZ-r&&z<c.maxZ+r)return true;
+      if((c.base||0)<3.7&&c.height>.3&&x>c.minX-r&&x<c.maxX+r&&z>c.minZ-r&&z<c.maxZ+r)return true;
     }
     return false;
   };
@@ -197,6 +197,7 @@ export function createFurnaceWatcher(scene, world, camera, opts={}) {
     let minT=1.0001;
     const dx=bx-ax,dz=bz-az;
     for(const c of aabb){
+      if((c.base||0)>=3.7||c.height<.3)continue;
       let t0=0,t1=1;
       const x0=c.minX-r,x1=c.maxX+r,z0=c.minZ-r,z1=c.maxZ+r;
       for(const [start,delta,lo,hi] of [[ax,dx,x0,x1],[az,dz,z0,z1]]){
@@ -216,7 +217,7 @@ export function createFurnaceWatcher(scene, world, camera, opts={}) {
 
   // Coarse, bounded A* keeps the entity out of closed halls rather than clipping through them.
   // Calculations run at most ~once per 1.5 seconds.
-  const STEP=13,BOUND=1500,offset=Math.floor(BOUND/STEP),limit=2*offset;
+  const STEP=7,BOUND=1500,offset=Math.floor(BOUND/STEP),limit=2*offset;
   function astar(sx,sz,tx,tz){
     const toGrid=(v)=>Math.max(-offset,Math.min(offset,Math.round(v/STEP)));
     const start=[toGrid(sx),toGrid(sz)],end=[toGrid(tx),toGrid(tz)];
@@ -238,7 +239,7 @@ export function createFurnaceWatcher(scene, world, camera, opts={}) {
     map.set(begin,{x:sxg,z:szg,g:0,f:Math.hypot(gx-sxg,gz-szg),parent:-1});
     opened.push(begin);
     let examined=0;
-    while(opened.length&&examined++<1350){
+    while(opened.length&&examined++<2400){
       let ix=0;
       for(let i=1;i<opened.length;i++)if(map.get(opened[i]).f<map.get(opened[ix]).f)ix=i;
       const id=opened.splice(ix,1)[0],cur=map.get(id);
@@ -337,7 +338,7 @@ export function createFurnaceWatcher(scene, world, camera, opts={}) {
     let goal=[tx,tz],dist=horizontal(x,z,tx,tz);
     if(dist>6&&!lineClear(x,z,tx,tz)){
       state.repath-=dt;
-      if(state.repath<=0||state.goal.length===0){
+      if(state.repath<=0){
         state.goal=astar(x,z,tx,tz);
         state.targetIndex=0;
         state.repath=1.4+Math.random()*.45;
@@ -354,7 +355,7 @@ export function createFurnaceWatcher(scene, world, camera, opts={}) {
       root.rotation.y=Math.atan2(tx-root.position.x,tz-root.position.z);
       return true;
     }
-    state.repath=0;
+    state.repath=Math.min(state.repath,.35);
     return false;
   }
   function update(time,dt,player,context={}) {
@@ -372,13 +373,13 @@ export function createFurnaceWatcher(scene, world, camera, opts={}) {
         flash.classList.remove('active');
         opts.onRespawn?.();
         state.phase='watch';state.phaseTime=0;state.pressure=0;
-        spawn(player,110,true);root.visible=true;
+        root.visible=spawn(player,110,true);
       }
       return;
     }
     if(!root.visible){
-      if(state.phaseTime>3)root.visible=spawn(player,83,true);
-      else return;
+      if(state.phaseTime>3){root.visible=spawn(player,83,true);state.phaseTime=0;}
+      if(!root.visible)return;
     }
     const x=root.position.x,z=root.position.z;
     const d=horizontal(x,z,player.x,player.z);
@@ -388,7 +389,7 @@ export function createFurnaceWatcher(scene, world, camera, opts={}) {
     const safe=nearSafe(player.x,player.z);
     // Separate the player's sight of the creature from its awareness of the player.
     // Stillness and concealment matter; sprinting creates more opportunities to be found.
-    const monsterSees=!context.hidden&&!safe&&
+    const monsterSees=!context.hidden&&!safe&&Math.abs((player.feet??player.y-1.82)-root.position.y)<5.5&&
       d<(context.crouching?53:context.sprinting?145:103)&&lineClear(x,z,player.x,player.z);
     if(monsterSees){
       state.lostSight=0;
@@ -434,7 +435,7 @@ export function createFurnaceWatcher(scene, world, camera, opts={}) {
       const target=state.lostSight>.65?
         {x:state.lastTargetX,z:state.lastTargetZ}:player;
       const moved=speed>0?navigate(target,speed,dt):false;
-      if(d<3.5 && !safe && !context.hidden && monsterSees && state.stun<=0 && state.cooldown<=0){
+      if(d<3.1 && Math.abs((player.feet??player.y-1.82)-root.position.y)<2.5 && !safe && !context.hidden && monsterSees && state.stun<=0 && state.cooldown<=0){
         scare(player);return;
       }
       if(safe&&state.phaseTime>8)changePhase('stalk');
@@ -474,6 +475,8 @@ export function createFurnaceWatcher(scene, world, camera, opts={}) {
     torso.rotation.z=Math.sin(time*.72)*.025+(state.phase==='chase'?Math.sin(step*.4)*.06:0);
     head.rotation.y=Math.sin(time*.43)*.16+(visible?Math.sin(time*7)*.022:0);
     root.scale.y=1+Math.sin(time*.82)*.012;
+    if(state.phase!=='chase'&&state.stun<=0)root.rotation.y=Math.atan2(player.x-root.position.x,player.z-root.position.z);
+    torso.rotation.x=state.phase==='chase'?.20:state.stun>0?-.14:.02;
     eyeLight.intensity=state.stun>0?.28:1.9+Math.sin(time*(state.phase==='chase'?14:4))*.75;
     for(let i=0;i<smoke.length;i++){
       const s=smoke[i],q=(time*.16+i/5)%1;

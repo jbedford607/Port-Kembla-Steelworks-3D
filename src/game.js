@@ -3,6 +3,7 @@ import { createMaterials } from './materials.js';
 import { createWorld } from './world.js';
 import { createFurnaceWatcher } from './horror.js';
 import { createNightEvents } from './night_fx.js';
+import { createPlantLighting,createIndustrialAudio } from './interiors.js';
 import './style.css';
 
 const canvas=document.getElementById('world');
@@ -102,10 +103,12 @@ function main(){
   scene.add(rays);
 
   const world=createWorld(scene,mats);
+  const updatePlantLighting=createPlantLighting(scene,world);
+  const industrialAudio=createIndustrialAudio();
   const nightFx=createNightEvents(scene,world,camera);
   const keys=new Set();
   const visited=new Set([0]);
-  const PLAYER={x:world.landmarks[0].pos[0],y:2,z:world.landmarks[0].pos[2],vy:0,grounded:true,fly:false,height:2,stamina:100,sprinting:false};
+  const PLAYER={x:world.landmarks[0].pos[0],y:2,z:world.landmarks[0].pos[2],vy:0,grounded:true,fly:false,height:2,stamina:100,sprinting:false,feet:0,vx:0,vz:0,crouching:false,exhausted:false};
   camera.position.set(PLAYER.x,PLAYER.y,PLAYER.z);
   camera.rotation.order='YXZ';
   let yaw=world.landmarks[0].yaw,pitch=-.06;
@@ -121,7 +124,7 @@ function main(){
   const qualities=[
     {name:'PERFORMANCE',scale:.70,maxPixels:1150000,shadows:false},
     {name:'BALANCED',scale:1.0,maxPixels:2000000,shadows:true},
-    {name:'ULTRA',scale:1.35,maxPixels:3600000,shadows:true}
+    {name:'ULTRA',scale:1.5,maxPixels:8294400,shadows:true}
   ];
   let lastW=0,lastH=0,time=0,frames=0,fpsAt=performance.now(),fps=0;
   let toastUntil=0,lock=false;
@@ -207,7 +210,7 @@ function main(){
     const q=qualities[quality];
     renderer.shadowMap.enabled=q.shadows;
     sun.castShadow=q.shadows;
-    sun.shadow.mapSize.set(quality===2?2048:1024,quality===2?2048:1024);
+    sun.shadow.mapSize.set(quality===2?4096:1536,quality===2?4096:1536);
     sun.shadow.map?.dispose();sun.shadow.map=null;
     lastW=lastH=0;
     show('GRAPHICS / '+q.name,2.0);
@@ -248,8 +251,9 @@ function main(){
   }
   function allowed(x,z){
     if(PLAYER.fly)return true;
-    const rad=.52;
+    const rad=.43;
     for(const c of world.colliders){
+      if((c.base||0)>PLAYER.feet+PLAYER.height+.12 || c.height<PLAYER.feet+.20)continue;
       if(x+rad>c.minX&&x-rad<c.maxX&&z+rad>c.minZ&&z-rad<c.maxZ)
         return false;
     }
@@ -258,55 +262,58 @@ function main(){
   function teleport(index){
     const l=world.landmarks[index];if(!l)return;
     nightFx.exitHiding();
-    PLAYER.x=l.pos[0];PLAYER.y=l.pos[1];PLAYER.z=l.pos[2];PLAYER.vy=0;PLAYER.stamina=100;
+    PLAYER.x=l.pos[0];PLAYER.y=l.pos[1];PLAYER.z=l.pos[2];PLAYER.vy=0;PLAYER.vx=PLAYER.vz=0;PLAYER.feet=l.pos[1]-2;PLAYER.height=2;PLAYER.grounded=true;PLAYER.stamina=100;PLAYER.exhausted=false;
     yaw=l.yaw;pitch=-.04;visited.add(index);
     horror.onPlayerTeleport(PLAYER);
     show('SECTOR / '+l.name,2.5);
   }
+  let strideTime=0,jumpHeld=false;
   function move(dt){
     const lateral=Number(keys.has('KeyD'))-Number(keys.has('KeyA'));
     const fore=Number(keys.has('KeyW'))-Number(keys.has('KeyS'));
     const crouch=keys.has('KeyC')||keys.has('ControlLeft');
-    const sprint=(keys.has('ShiftLeft')||keys.has('ShiftRight'))&&!crouch&&!PLAYER.fly;
-    const running=sprint&&PLAYER.stamina>7&&(Math.abs(lateral)+Math.abs(fore)>0);
-    PLAYER.sprinting=running;
-    PLAYER.stamina=Math.min(100,Math.max(0,PLAYER.stamina+dt*(running?-13.5:14)));
-    const speed=PLAYER.fly?28:crouch?2.8:running?11.5:6.8;
-    if(nightFx.isHidden()){
-      PLAYER.sprinting=false;
-      PLAYER.stamina=Math.min(100,PLAYER.stamina+dt*17);
-      camera.position.set(PLAYER.x,PLAYER.y,PLAYER.z);
-      camera.rotation.set(pitch,yaw,0,'YXZ');
-      return;
-    }
-    let dx=0,dz=0;
     const mag=Math.hypot(lateral,fore);
-    if(mag>0){
-      dx=(Math.cos(yaw)*lateral-Math.sin(yaw)*fore)/mag*speed*dt;
-      dz=(-Math.sin(yaw)*lateral-Math.cos(yaw)*fore)/mag*speed*dt;
-      if(allowed(PLAYER.x+dx,PLAYER.z))PLAYER.x+=dx;
-      if(allowed(PLAYER.x,PLAYER.z+dz))PLAYER.z+=dz;
+    const wantsRun=(keys.has('ShiftLeft')||keys.has('ShiftRight'))&&!crouch&&!PLAYER.fly;
+    if(PLAYER.stamina<=4)PLAYER.exhausted=true;
+    if(PLAYER.stamina>=35)PLAYER.exhausted=false;
+    const running=wantsRun&&mag>0&&(weather!==3||!PLAYER.exhausted);
+    PLAYER.sprinting=running;PLAYER.crouching=crouch;
+    PLAYER.stamina=weather===3?Math.min(100,Math.max(0,PLAYER.stamina+dt*(running?-9:18))):100;
+    const speed=PLAYER.fly?28:crouch?2.3:running?10.8:5.1;
+    if(nightFx.isHidden()){
+      PLAYER.vx=PLAYER.vz=0;PLAYER.sprinting=false;PLAYER.feet=0;PLAYER.height=1.4;
+      PLAYER.stamina=Math.min(100,PLAYER.stamina+dt*17);
+      camera.position.set(PLAYER.x,PLAYER.y,PLAYER.z);camera.rotation.set(pitch,yaw,0,'YXZ');return;
     }
+    PLAYER.height+=( (crouch&&!PLAYER.fly?1.15:1.82)-PLAYER.height)*(1-Math.exp(-dt*15));
+    const tx=mag?(Math.cos(yaw)*lateral-Math.sin(yaw)*fore)/mag*speed:0;
+    const tz=mag?(-Math.sin(yaw)*lateral-Math.cos(yaw)*fore)/mag*speed:0;
+    const response=1-Math.exp(-dt*(mag?15:21));
+    PLAYER.vx+=(tx-PLAYER.vx)*response;PLAYER.vz+=(tz-PLAYER.vz)*response;
+    const dx=PLAYER.vx*dt,dz=PLAYER.vz*dt;
+    if(allowed(PLAYER.x+dx,PLAYER.z))PLAYER.x+=dx;else PLAYER.vx=0;
+    if(allowed(PLAYER.x,PLAYER.z+dz))PLAYER.z+=dz;else PLAYER.vz=0;
+    const jump=keys.has('Space');
     if(PLAYER.fly){
-      const up=Number(keys.has('Space'))-Number(crouch);
-      PLAYER.y=Math.max(1.3,PLAYER.y+up*speed*dt);
+      PLAYER.feet=Math.max(0,PLAYER.feet+(Number(jump)-Number(crouch))*speed*dt);
+      PLAYER.grounded=false;PLAYER.vy=0;
     }else{
-      if(keys.has('Space')&&PLAYER.grounded){PLAYER.vy=8.4;PLAYER.grounded=false;}
-      PLAYER.vy-=23*dt;PLAYER.y+=PLAYER.vy*dt;
-      const eyeHeight=crouch?1.15:2;
-      const floor=world.floorHeight(PLAYER.x,PLAYER.z,PLAYER.y-eyeHeight);
-      const minimum=floor+eyeHeight;
-      // Grounded players step onto a slope; jumping players are not snapped down.
-      if(PLAYER.grounded && floor>PLAYER.y-eyeHeight && floor-(PLAYER.y-eyeHeight)<.85 && PLAYER.vy<=0){
-        PLAYER.y=minimum;PLAYER.vy=0;
-      }else if(PLAYER.y<=minimum){
-        PLAYER.y=minimum;PLAYER.vy=0;PLAYER.grounded=true;
-      }else if(PLAYER.vy<0){PLAYER.grounded=false;}
+      if(jump&&!jumpHeld&&PLAYER.grounded){PLAYER.vy=5.5;PLAYER.grounded=false;}
+      PLAYER.vy-=19.6*dt;
+      const previous=PLAYER.feet;
+      PLAYER.feet+=PLAYER.vy*dt;
+      const floor=world.floorHeight(PLAYER.x,PLAYER.z,previous);
+      if(PLAYER.feet<=floor&&(PLAYER.vy<=0||PLAYER.grounded)){PLAYER.feet=floor;PLAYER.vy=0;PLAYER.grounded=true;}
+      else PLAYER.grounded=false;
     }
-    PLAYER.x=Math.max(-1500,Math.min(1300,PLAYER.x));
-    PLAYER.z=Math.max(-1550,Math.min(1550,PLAYER.z));
-    camera.position.set(PLAYER.x,PLAYER.y,PLAYER.z);
-    camera.rotation.set(pitch,yaw,0,'YXZ');
+    jumpHeld=jump;
+    PLAYER.x=Math.max(-1500,Math.min(1300,PLAYER.x));PLAYER.z=Math.max(-1550,Math.min(1550,PLAYER.z));
+    PLAYER.y=PLAYER.feet+PLAYER.height;
+    const walking=PLAYER.grounded?Math.min(1,Math.hypot(PLAYER.vx,PLAYER.vz)/speed):0;
+    strideTime+=dt*(running?14:9)*walking;
+    const bob=walking*Math.sin(strideTime)*.022;
+    camera.position.set(PLAYER.x,PLAYER.y+bob,PLAYER.z);
+    camera.rotation.set(pitch,yaw,walking*Math.sin(strideTime*.5)*.0015,'YXZ');
   }
 
   const rainCount=380;
@@ -352,7 +359,7 @@ function main(){
       (document.pointerLockElement===canvas?'WASD MOVE · SHIFT RUN · SPACE JUMP · H HELP':'CLICK TO LOOK · WASD MOVE · T WEATHER · Q QUALITY'));
   }
   canvas.addEventListener('click',()=>{
-    horror.tryAudio();
+    industrialAudio.init();horror.tryAudio();
     if(document.pointerLockElement!==canvas)canvas.requestPointerLock?.();
   });
   document.addEventListener('pointerlockchange',()=>{
@@ -365,6 +372,7 @@ function main(){
     pitch=Math.max(-1.48,Math.min(1.48,pitch-e.movementY*.0021));
   });
   document.addEventListener('keydown',e=>{
+    if(!e.repeat)industrialAudio.init();
     if(weather===3 && e.code!=='KeyK')horror.tryAudio();
     if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();
     keys.add(e.code);
@@ -372,13 +380,14 @@ function main(){
     if(e.code==='KeyT'){weather=(weather+1)%4;if(weather===3)horror.tryAudio();applyWeather();}
     if(e.code==='KeyQ'){quality=(quality+1)%3;applyQuality();}
     if(e.code==='KeyK'){show(horror.toggleMute()?'HORROR SOUND ON':'HORROR SOUND MUTED',2.2);}
+    if(e.code==='KeyJ'){show(industrialAudio.toggle()?'PLANT AUDIO ON':'PLANT AUDIO MUTED',2);}
     if(e.code==='KeyF' && weather===3){show(nightFx.toggleFlashlight()?'FLASHLIGHT ON':'FLASHLIGHT OFF',1.2);}
-    if(e.code==='KeyV'){PLAYER.fly=!PLAYER.fly;PLAYER.vy=0;show(PLAYER.fly?'FLIGHT ENABLED':'WALK MODE');}
+    if(e.code==='KeyV'&&!nightFx.isHidden()){PLAYER.fly=!PLAYER.fly;PLAYER.vy=0;show(PLAYER.fly?'FLIGHT ENABLED':'WALK MODE');}
     if(e.code==='KeyH'){help.hidden=!help.hidden;}
     if(e.code==='KeyM'){toggleMap();}
     if(e.code==='KeyE'){
       const message=nightFx.interact(PLAYER)||world.activate(camera);
-      if(message)show(message,2.7);
+      if(message){industrialAudio.click();show(message,2.7);}
     }
     if(e.code.startsWith('Digit')){
       const num=Number(e.code.slice(5));const i=num===0?9:num-1;
@@ -404,14 +413,21 @@ function main(){
       }
       lightning=Math.max(0,lightning-dt*15);
       ambient.intensity=(weather===1?.8:weather===3?.46:weather===2?1.6:1.3)+lightning;
-      if(!horror.inScare())move(dt);
+      if(!horror.inScare()&&siteMap.hidden&&help.hidden)move(dt);
       resize();
       sky.position.copy(camera.position);
       skyMaterial.uniforms.uTime.value=time;
       world.update(time,dt,camera,quality);
+      updatePlantLighting(time,camera,weather,quality,horror.getThreat());
+      industrialAudio.update(PLAYER,weather,nightFx.isHidden(),dt);
+      if(sun.castShadow){
+        const sx=Math.round(camera.position.x/2)*2,sz=Math.round(camera.position.z/2)*2;
+        sun.target.position.set(sx,0,sz);sun.position.set(sx-400,180,sz-220);
+        const r=quality===2?155:105;sun.shadow.camera.left=-r;sun.shadow.camera.right=r;sun.shadow.camera.top=r;sun.shadow.camera.bottom=-r;sun.shadow.camera.updateProjectionMatrix();
+      }
       nightFx.update(time,dt,PLAYER,horror.getThreat());
       const hunter=horror.getPosition();
-      horror.update(time,dt,PLAYER,{
+      if(siteMap.hidden&&help.hidden)horror.update(time,dt,PLAYER,{
         hidden:nightFx.isHidden(),
         crouching:keys.has('KeyC')||keys.has('ControlLeft'),
         sprinting:PLAYER.sprinting,

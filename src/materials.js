@@ -25,12 +25,12 @@ function texturePair(kind){
     const joints=(x%64===0||y%64===0);
     if(kind==='concrete'){v+=(joints?-34:0);v+=(hash(Math.floor(x/64),Math.floor(y/64),3)-.5)*10;}
     if(kind==='asphalt'){v+=(hash(Math.floor(x/2),Math.floor(y/2),8)-.5)*19;}
-    if(kind==='cladding'||kind==='roof'){let rib=Math.abs(Math.sin(x*Math.PI/14));v+=rib*18-(x%28<2?24:0);v+=Math.sin(y*.15)*2;}
-    if(kind==='rust'){let run=Math.sin(x*.16+Math.sin(y*.018)*5);v+=run*17;v+=Math.sin(y*.09+x*.2)*5;}
-    if(kind==='metal'){v+=Math.sin(y*.4)*3+(x%48<2?-21:0);}
+    if(kind==='cladding'||kind==='roof'){let rib=Math.abs(Math.sin(x*Math.PI/16));v+=rib*18-(x%32<2?24:0);v+=Math.sin(y*Math.PI/16)*2;}
+    if(kind==='rust'){let run=Math.sin(x*Math.PI/16+Math.sin(y*Math.PI/128)*5);v+=run*17;v+=Math.sin(y*Math.PI/32+x*Math.PI/16)*5;}
+    if(kind==='metal'){v+=Math.sin(y*Math.PI/8)*3+(x%64<2?-21:0);}
     if(kind==='dirt'||kind==='gravel'){v+=(hash(x*.8|0,y*.8|0,12)-.5)*22;}
     gray[i]=v;
-    const stain=(kind==='rust'||kind==='dirt')?Math.max(0,Math.sin(x*.1+y*.015))*10:0;
+    const stain=(kind==='rust'||kind==='dirt')?Math.max(0,Math.sin(x*Math.PI/32+y*Math.PI/128))*10:0;
     img.data[k]=clamp(base[0]+v+stain,0,255);
     img.data[k+1]=clamp(base[1]+v*.85,0,255);
     img.data[k+2]=clamp(base[2]+v*.78-stain*.4,0,255);

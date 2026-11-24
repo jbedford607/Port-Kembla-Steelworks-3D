@@ -59,14 +59,14 @@ export function createNightEvents(scene,world,camera) {
     cube(arm,trim,2.1,.14,.68,0,y-.40,0);
     cube(arm,glass,1.8,.08,.56,0,y-.54,0);
     environment.add(arm);
-    if(i<8){
+    if(i<0){
       const light=new THREE.PointLight(0xffb470,22,67,2);
       light.position.set(x,y-1,z);environment.add(light);lamps.push({light,i,glass});
     }
   }
 
   // No shadow-map allocation for the flashlight, so it works in Performance mode.
-  const torch=new THREE.SpotLight(0xffe1b4,135,110,Math.PI/8,.42,1.4);
+  const torch=new THREE.SpotLight(0xffe1b4,900,90,Math.PI/8,.42,1.4);
   torch.castShadow=false;
   torch.visible=false;torch.position.set(0,0,0);scene.add(torch);
   const torchTarget=new THREE.Object3D();scene.add(torchTarget);torch.target=torchTarget;
@@ -93,6 +93,7 @@ export function createNightEvents(scene,world,camera) {
 
   function intersects(ax,az,bx,bz){
     for(const c of world.colliders){
+      if((c.base||0)>3.5||c.height<.3)continue;
       let a=0,b=1;const dx=bx-ax,dz=bz-az;
       for(const [origin,delta,lo,hi] of [[ax,dx,c.minX-.7,c.maxX+.7],[az,dz,c.minZ-.7,c.maxZ+.7]]){
         if(Math.abs(delta)<.00001){if(origin<lo||origin>hi){a=2;break;}}
@@ -171,7 +172,7 @@ export function createNightEvents(scene,world,camera) {
     state.decoyLife=0;apparition.visible=false;
     environment.visible=on;exitHiding();
     state.flashlightOn=false;torch.visible=false;
-    flashlightIcon.classList.toggle('visible',on);
+    flashlightIcon.classList.toggle('visible',on);flashlightIcon.textContent='F  FLASHLIGHT OFF';
     if(!on)hiddenOverlay.classList.remove('visible');
   }
   environment.visible=false;
@@ -200,7 +201,7 @@ export function createNightEvents(scene,world,camera) {
       light.intensity=nearby?(10+9*Math.sin(t*.24+i))*flutter*powerLoss:3;
     }
     const beamBreak=threat>.90&&state.flashlightOn&&!state.hidden&&Math.sin(t*5)>.94;
-    torch.intensity=beamBreak?15:135;
+    torch.intensity=beamBreak?90:900;
     torch.visible=state.flashlightOn&&!state.hidden;
     state.decoyTimer-=dt;
     if(state.decoyTimer<0 && threat>.12){

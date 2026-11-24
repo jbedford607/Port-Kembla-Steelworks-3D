@@ -132,3 +132,7 @@ The steelmaking workflow was informed by public BlueScope explanations: https://
 **Repository visibility:** This repository is currently public. Change visibility under Settings → General → Danger Zone if you want the source private.
 
 Not affiliated with or endorsed by BlueScope.
+
+## V8 overhaul
+
+Preserves the 13-sector map, adds accessible factory and service interiors with operating roller shutters and permanent side exits, adds near-camera industrial lighting, improves movement and night stamina, procedural plant and player sounds (J toggles plant audio), increases Ultra resolution budget and local shadow detail, corrects several Watcher collision and path retry problems. Geometry tests now include dynamic door collision. Real-world site layout is fictionalised.

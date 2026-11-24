@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { boxGeometryWorldUV } from './materials.js';
 import { createExpansion } from './expansion.js';
+import { buildInterior } from './interiors.js';
 
 // Publicly documented process order, simplified for a traversable fictional site:
 // harbour/raw stock -> coke & sinter -> blast furnace -> BOS -> casting -> rolling/dispatch.
@@ -46,7 +47,7 @@ class District {
       if(!geometry)continue;
       geometry.computeBoundingSphere();
       const mesh=new THREE.Mesh(geometry,mat);
-      mesh.castShadow=mat.userData?.castsShadow!==false;
+      mesh.castShadow=this.name!=='GROUND'&&mat.userData?.castsShadow!==false;
       mesh.receiveShadow=true;
       this.group.add(mesh);
     }
@@ -55,7 +56,7 @@ class District {
 }
 
 export function createWorld(scene,m){
-  const zones=[],colliders=[],interactive=[],dynamic=[],smokeEmitters=[],raisedFloors=[],ramps=[];
+  const zones=[],colliders=[],interactive=[],dynamic=[],smokeEmitters=[],raisedFloors=[],ramps=[],lightSources=[];
   const addZone=(name,x,z,range=470)=>{const zne=new District(name,[x,z],range);zones.push(zne);return zne;};
   const block=(x,z,w,d,h=25)=>colliders.push({minX:x-w/2,maxX:x+w/2,minZ:z-d/2,maxZ:z+d/2,height:h});
   const addInteract=(x,z,r,label,fn)=>interactive.push({x,z,r,label,activate:fn});
@@ -115,6 +116,7 @@ export function createWorld(scene,m){
   escarpment(-1500,m.grass,355,3.7);
 
   function lightPost(D,x,z,h=22){
+    lightSources.push({x,y:h-1.4,z,power:720,range:85});
     D.cyl(x,h/2,z,.22,.17,h,m.metal,7);
     D.box(x,h-.9,z,2.6,.25,1.3,m.white);
     D.box(x,h-1.1,z,2.2,.12,1,m.light);
@@ -134,6 +136,9 @@ export function createWorld(scene,m){
     }
   }
   function closedHall(D,x,z,w,d,h,mat=m.cladding,doors=4){
+    if([385,-23,120,-400,108,-26,51].includes(x)){
+      buildInterior(D,x,z,w,d,h,m,colliders,interactive,dynamic,lightSources,[-26,51,108].includes(x)?'control':'service');return;
+    }
     D.box(x,h/2,z,w,h,d,mat);
     D.box(x,h+.45,z,w+1.2,.9,d+1.2,m.roof);
     for(let xx=x-w/2+8;xx<x+w/2-2;xx+=8){
@@ -162,6 +167,7 @@ export function createWorld(scene,m){
       for(let zz of [z-d/2+1,z+d/2-1]){
         D.box(xx,h/2,zz,1,h,1,m.rust);
         D.box(xx,1.2,zz,2.1,2.4,2.1,m.concrete);
+        block(xx,zz,2.1,2.1,h);
         // bolted column footplates
         for(let a of [-.75,.75])for(let b of [-.75,.75])
           D.cyl(xx+a,2.48,zz+b,.09,.09,.23,m.metal,6);
@@ -537,12 +543,12 @@ export function createWorld(scene,m){
   dynamic.push(t=>{heatLight.intensity=20+8*Math.sin(t*4);});
 
   const state={heat:true,crane:true};
-  const expansion=createExpansion(scene,m,colliders,interactive,raisedFloors,ramps);
+  const expansion=createExpansion(scene,m,colliders,interactive,raisedFloors,ramps,lightSources);
   landmarks.push(...expansion.landmarks);
   for(const zone of zones)zone.finalize(scene);
 
   return {
-    landmarks,colliders,interactive,zones,
+    landmarks,colliders,interactive,zones,lightSources,
     expansion,
     getVisitedOperations(){return expansion.inspectionCount();},
     floorHeight(x,z,footY=0){
