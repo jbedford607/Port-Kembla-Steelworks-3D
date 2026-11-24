@@ -83,7 +83,7 @@ console.log('PASS: '+world.landmarks.length+' districts, '+geos+' meshes, '+
   world.getVisitedOperations()+' functional machinery checks.');
 
 const gatePanel=world.interactive.find(x=>x.label.includes('ROLLER SHUTTER'));
-const gate=world.colliders.find(x=>x.base===8&&x.height===16);
+const gate=world.colliders.find(x=>x.door&&x.base>7);
 assert.ok(gate,'Expected open overhead door collision');
 gatePanel.activate();
 for(let i=1;i<=300;i++)world.update(7+i/60,1/60,camera,1);

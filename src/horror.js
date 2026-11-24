@@ -4,6 +4,18 @@ import * as THREE from 'three';
 // No recordings, external audio files, network requests or heavy physics engine.
 export function createFurnaceWatcher(scene, world, camera, opts={}) {
   const aabb=world.colliders;
+  // Spatial buckets keep close-range collision queries independent of total plant complexity.
+  const cell=32,buckets=new Map();const cellId=(x,z)=>x+','+z;
+  for(const c of aabb){
+    for(let ix=Math.floor((c.minX-3)/cell);ix<=Math.floor((c.maxX+3)/cell);ix++)for(let iz=Math.floor((c.minZ-3)/cell);iz<=Math.floor((c.maxZ+3)/cell);iz++){
+      const key=cellId(ix,iz);if(!buckets.has(key))buckets.set(key,[]);buckets.get(key).push(c);
+    }
+  }
+  function candidates(ax,az,bx=ax,bz=az){
+    const set=new Set();for(let ix=Math.floor((Math.min(ax,bx)-3)/cell);ix<=Math.floor((Math.max(ax,bx)+3)/cell);ix++)for(let iz=Math.floor((Math.min(az,bz)-3)/cell);iz<=Math.floor((Math.max(az,bz)+3)/cell);iz++){
+      for(const c of buckets.get(cellId(ix,iz))||[])set.add(c);
+    }return set;
+  }
   const state={night:false,phase:'dormant',time:0,phaseTime:0,pressure:0,
     seenFor:0,unseenFor:0,stuckFor:0,repath:0,hideFor:0,footclock:0,
     cooldown:0,captureTime:0,strobe:0,mute:false,master:.58,
@@ -82,6 +94,29 @@ export function createFurnaceWatcher(scene, world, camera, opts={}) {
     const a=i/6*Math.PI, xa=Math.cos(a)*.66;
     part(torso,.075,1.28,.07,i%3?charMat:seamMat,xa,.43-i*.12,-.37,Math.sin(i)*.16);
   }
+  // Curved jaw braces, cable tendons and cast face armour; geometry, not an image.
+  function tendon(parent,points,r,mat){
+    const path=new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(...p)));
+    const mesh=new THREE.Mesh(new THREE.TubeGeometry(path,14,r,6,false),mat);
+    mesh.castShadow=true;parent.add(mesh);
+  }
+  for(const s of [-1,1]){
+    tendon(head,[[s*.41,.66,.24],[s*.51,.20,.43],[s*.38,-.20,.45],[s*.25,-.65,.36]],.06,seamMat);
+    tendon(head,[[s*.45,.42,-.2],[s*.52,-.22,-.16],[s*.39,-.82,.09]],.075,charMat);
+    for(let j=0;j<3;j++){
+      const mesh=new THREE.Mesh(new THREE.CylinderGeometry(.07,.11,.18,6),charMat);
+      mesh.rotation.x=Math.PI/2;mesh.position.set(s*(.35+j*.04),.50-j*.22,.42);head.add(mesh);
+    }
+    tendon(torso,[[s*.65,.72,-.1],[s*.63,.22,-.48],[s*.40,-.50,-.44],[s*.51,-1.35,-.23]],.095,seamMat);
+    tendon(arms[s<0?0:1],[[0,-.2,-.09],[s*.32,-1.24,-.05],[s*.06,-1.75,.22],[s*.18,-3.48,.12]],.07,charMat);
+  }
+  const scareScene=new THREE.Scene();scareScene.background=new THREE.Color(0x060708);
+  const scareCamera=new THREE.PerspectiveCamera(47,1,.05,20);
+  scareCamera.position.set(0,0,3.8);
+  const scareHead=head.clone(true);scareHead.position.set(0,-.08,0);scareScene.add(scareHead);
+  const scareFill=new THREE.HemisphereLight(0x96afbd,0x461307,1.4);scareScene.add(scareFill);
+  const scareKey=new THREE.PointLight(0xff692f,15,12,2);scareKey.position.set(-1.4,1.2,2.4);scareScene.add(scareKey);
+  const scareRim=new THREE.PointLight(0xb9c5df,11,8,2);scareRim.position.set(1.2,.4,1.5);scareScene.add(scareRim);
   const eyeLight=new THREE.PointLight(0xff5e16,2.5,17,2);
   eyeLight.position.set(0,5.95,.60);root.add(eyeLight);
   const smokeCanvas=document.createElement('canvas');
@@ -187,7 +222,7 @@ export function createFurnaceWatcher(scene, world, camera, opts={}) {
   const rand=(a,b)=>a+Math.random()*(b-a);
   const horizontal=(x,z,y,w)=>Math.hypot(x-y,z-w);
   const padded=(x,z,r=1.2)=>{
-    for(const c of aabb){
+    for(const c of buckets.get(cellId(Math.floor(x/cell),Math.floor(z/cell)))||[]){
       if((c.base||0)<3.7&&c.height>.3&&x>c.minX-r&&x<c.maxX+r&&z>c.minZ-r&&z<c.maxZ+r)return true;
     }
     return false;
@@ -196,7 +231,7 @@ export function createFurnaceWatcher(scene, world, camera, opts={}) {
   function blockedSegment(ax,az,bx,bz,r=.7){
     let minT=1.0001;
     const dx=bx-ax,dz=bz-az;
-    for(const c of aabb){
+    for(const c of candidates(ax,az,bx,bz)){
       if((c.base||0)>=3.7||c.height<.3)continue;
       let t0=0,t1=1;
       const x0=c.minX-r,x1=c.maxX+r,z0=c.minZ-r,z1=c.maxZ+r;
@@ -212,7 +247,7 @@ export function createFurnaceWatcher(scene, world, camera, opts={}) {
     }
     return minT<=1;
   }
-  function posClear(x,z){return !padded(x,z,2.2);}
+  function posClear(x,z){return !padded(x,z,1.3);}
   function lineClear(x,z,tx,tz){return !blockedSegment(x,z,tx,tz,1.0);}
 
   // Coarse, bounded A* keeps the entity out of closed halls rather than clipping through them.
@@ -250,7 +285,7 @@ export function createFurnaceWatcher(scene, world, camera, opts={}) {
           points.push([item.x*STEP,item.z*STEP]);
           seek=item.parent;
         }
-        points.reverse();points.shift();
+        points.reverse();if(points.length>1&&lineClear(sx,sz,points[1][0],points[1][1]))points.shift();
         points.push([tx,tz]);
         return points;
       }
@@ -310,7 +345,7 @@ export function createFurnaceWatcher(scene, world, camera, opts={}) {
   function exitNight(){
     state.night=false;state.phase='dormant';state.pressure=0;state.captureTime=0;
     state.stun=0;state.flareCooldown=0;state.lostSight=0;state.hiddenFor=0;
-    root.visible=false;flash.classList.remove('active');hud.classList.remove('visible');
+    root.visible=false;flash.classList.remove('active','near-miss');hud.classList.remove('visible');
     vignette.classList.remove('visible');
     if(humGain&&audio)humGain.gain.setTargetAtTime(0,audio.currentTime,.15);
     if(windGain&&audio)windGain.gain.setTargetAtTime(0,audio.currentTime,.15);
@@ -336,7 +371,7 @@ export function createFurnaceWatcher(scene, world, camera, opts={}) {
     const tx=player.x,tz=player.z;
     const x=root.position.x,z=root.position.z;
     let goal=[tx,tz],dist=horizontal(x,z,tx,tz);
-    if(dist>6&&!lineClear(x,z,tx,tz)){
+    if(dist>1.5&&!lineClear(x,z,tx,tz)){
       state.repath-=dt;
       if(state.repath<=0){
         state.goal=astar(x,z,tx,tz);
@@ -355,7 +390,7 @@ export function createFurnaceWatcher(scene, world, camera, opts={}) {
       root.rotation.y=Math.atan2(tx-root.position.x,tz-root.position.z);
       return true;
     }
-    state.repath=Math.min(state.repath,.35);
+    state.repath=state.repath>0?Math.min(state.repath,.45):.45;
     return false;
   }
   function update(time,dt,player,context={}) {
@@ -532,7 +567,17 @@ export function createFurnaceWatcher(scene, world, camera, opts={}) {
   }
   return {
     update,setNight,toggleMute,tryAudio:initAudio,onPlayerTeleport,
-    getPosition(){return {x:root.position.x,z:root.position.z};},
+    getPosition(){return {x:root.position.x,y:root.position.y+5.9,z:root.position.z};},
+    renderScare(renderer,aspect){
+      if(state.phase!=='caught')return;
+      const t=state.captureTime;
+      scareCamera.aspect=aspect;scareCamera.updateProjectionMatrix();
+      scareCamera.position.z=3.6-1.65*Math.min(1,t*4.5);
+      scareCamera.position.x=Math.sin(t*23)*.038*Math.max(0,1-t);
+      scareCamera.lookAt(0,.02,0);
+      scareHead.rotation.y=Math.sin(t*14)*.11;scareHead.rotation.z=Math.sin(t*10)*.035;
+      renderer.render(scareScene,scareCamera);
+    },
     inScare(){return state.phase==='caught';},
     getThreat(){return state.phase==='chase'?1:Math.min(1,state.pressure/35);},
     get phase(){return state.phase;}

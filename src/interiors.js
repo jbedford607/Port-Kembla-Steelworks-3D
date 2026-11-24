@@ -44,12 +44,12 @@ export function buildInterior(D,x,z,w,d,h,m,colliders,interactive,dynamic,lights
   const gateMaterial=m.rust;
   for(let row=0;row<16;row++){
     const slab=new THREE.Mesh(new THREE.BoxGeometry(portal-.2,.47,.27),gateMaterial);
-    slab.position.y=-7.75+row*.48;slab.castShadow=true;slab.receiveShadow=true;shutter.add(slab);
+    slab.position.y=-7.75+row*.48;slab.castShadow=true;slab.receiveShadow=true;slab.visible=false;shutter.add(slab);
   }
   // Door is initially open; the panels are physically carried above the entrance.
   shutter.position.y=16.25;D.group.add(shutter);
   const gate=solid(x,front,portal,.7,8);
-  gate.base=8;gate.height=16;
+  gate.base=8;gate.height=8.4;gate.door=true;
   let open=true,doorY=16.25;
   const buttonX=x+portal/2+1.4, buttonZ=front+1.15;
   b(buttonX,1.05,buttonZ,.58,2.1,.48,m.dark);
@@ -61,7 +61,8 @@ export function buildInterior(D,x,z,w,d,h,m,colliders,interactive,dynamic,lights
   dynamic.push((t)=>{
     const dt=Math.min(.06,Math.max(0,t-previous));previous=t;
     doorY+=Math.sign((open?16.25:8.25)-doorY)*Math.min(Math.abs((open?16.25:8.25)-doorY),dt*3.6);
-    shutter.position.y=doorY;gate.base=Math.max(0,doorY-8.02);gate.height=doorY;
+    shutter.position.y=doorY;gate.base=Math.max(0,doorY-8.25);gate.height=8.4;
+    for(const slab of shutter.children)slab.visible=doorY+slab.position.y<8.15;
   });
   // Two service aisles along the side walls, wide unobstructed central aisle.
   for(const side of [-1,1]){

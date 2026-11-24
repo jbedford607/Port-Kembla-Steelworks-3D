@@ -176,3 +176,9 @@
  #map .steel-sector-button b{font-size:10px;min-width:19px}
  #steel-ops{font-size:8px!important;}
 }
+
+/* V8: the capture sequence is a second real 3D scene, not the old CSS mask. */
+#furnace-horror-flash.active {background:radial-gradient(ellipse,transparent 32%,#07030480 78%,#020203 100%);animation:fh-real-capture 1.25s ease-out forwards;}
+#furnace-horror-flash.active .fh-head{display:none;}
+#furnace-horror-flash.active .fh-noise{opacity:.12;animation:none;}
+@keyframes fh-real-capture{0%{opacity:1}12%{opacity:.82}75%{opacity:.65}100%{opacity:1;visibility:visible}}

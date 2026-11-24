@@ -59,10 +59,7 @@ export function createNightEvents(scene,world,camera) {
     cube(arm,trim,2.1,.14,.68,0,y-.40,0);
     cube(arm,glass,1.8,.08,.56,0,y-.54,0);
     environment.add(arm);
-    if(i<0){
-      const light=new THREE.PointLight(0xffb470,22,67,2);
-      light.position.set(x,y-1,z);environment.add(light);lamps.push({light,i,glass});
-    }
+    world.lightSources?.push({x,y:y-1,z,power:650,range:72});
   }
 
   // No shadow-map allocation for the flashlight, so it works in Performance mode.

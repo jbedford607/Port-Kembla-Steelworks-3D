@@ -431,7 +431,7 @@ function main(){
         hidden:nightFx.isHidden(),
         crouching:keys.has('KeyC')||keys.has('ControlLeft'),
         sprinting:PLAYER.sprinting,
-        flashlightHit:nightFx.flashlightHit(hunter.x,5.2,hunter.z)
+        flashlightHit:nightFx.flashlightHit(hunter.x,hunter.y,hunter.z)
       });
       const fovTarget=75+(weather===3?Math.min(5,horror.getThreat()*5):0);
       if(Math.abs(camera.fov-fovTarget)>.04){camera.fov+=(fovTarget-camera.fov)*Math.min(1,dt*3);camera.updateProjectionMatrix();}
@@ -439,6 +439,7 @@ function main(){
       updateHud(now);
       if(!siteMap.hidden && frames%3===0)drawSiteMap();
       renderer.render(scene,camera);
+      horror.renderScare(renderer,camera.aspect);
       requestAnimationFrame(frame);
     }catch(e){fail(e);}
   }
